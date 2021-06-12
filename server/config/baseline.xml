@@ -1,10 +1,12 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <SmellBaseline>
   <ManuallySuppressedIssues>
+    <ID>CollapsibleIfStatements:SavedDataPoolElementFeatureFix.kt$if (providerType != "minecraft:simple_state_provider" &amp;&amp; providerType != "minecraft:rotated_block_provider") { if (providerType == "minecraft:weighted_state_provider") { if (providerFirstEntryName == "minecraft:packed_ice" || providerFirstEntryName == "minecraft:blue_ice") return Optional.of("minecraft:pile_ice") if (providerFirstEntryName == "minecraft:jack_o_lantern" || providerFirstEntryName == "minecraft:pumpkin") return Optional.of("minecraft:pile_pumpkin") } }</ID>
     <ID>ComplexMethod:KryptonServer.kt$KryptonServer$internal fun start(disableGUI: Boolean)</ID>
     <ID>ComplexMethod:KryptonWorld.kt$KryptonWorld$fun tick(profiler: Profiler)</ID>
     <ID>ComplexMethod:WatchdogProcess.kt$WatchdogProcess$override fun run()</ID>
     <ID>ComplexMethod:bytebufs.kt$fun ByteBuf.writeParticle(particle: ParticleEffect, location: Location)</ID>
+    <ID>ComplexMethod:SavedDataPoolElementFeatureFix.kt$private fun String.replacement(name: String, providerType: String, providerName: String, providerFirstEntryName: String, foliagePlacerType: String, leavesProviderName: String): Optional&lt;String></ID>
     <ID>MethodOverloading:metadata.kt$org.kryptonmc.krypton.util.metadata.kt</ID>
     <ID>TooManyFunctions:KryptonCommandManager.kt$KryptonCommandManager : CommandManager</ID>
     <ID>TooManyFunctions:KryptonPlayer.kt$KryptonPlayer : PlayerKryptonSender</ID>
@@ -65,6 +67,7 @@
     <ID>MethodOverloading:metadata.kt$org.kryptonmc.krypton.util.metadata.kt</ID>
     <ID>NestedBlockDepth:KryptonWorld.kt$KryptonWorld$fun tick(profiler: Profiler)</ID>
     <ID>NestedBlockDepth:PluginLoader.kt$PluginLoader$private fun Path.findMetadata(): SerializedPluginDescription?</ID>
+    <ID>NestedBlockDepth:SavedDataPoolElementFeatureFix.kt$private fun String.replacement(name: String, providerType: String, providerName: String, providerFirstEntryName: String, foliagePlacerType: String, leavesProviderName: String): Optional&lt;String></ID>
     <ID>UnderscoresInNumericLiterals:ConfigTests.kt$ConfigTests$10000</ID>
     <ID>UnderscoresInNumericLiterals:ConfigTests.kt$ConfigTests$25565</ID>
     <ID>UnderscoresInNumericLiterals:ConfigTests.kt$ConfigTests$25566</ID>

@@ -16,18 +16,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package org.kryptonmc.krypton
+package org.kryptonmc.krypton.util.datafix.schema
 
-import java.util.concurrent.atomic.AtomicInteger
+import com.mojang.datafixers.schemas.Schema
+import com.mojang.datafixers.types.templates.TypeTemplate
+import java.util.function.Supplier
 
-object ServerStorage {
+class V2684(versionKey: Int, parent: Schema) : NamespacedSchema(versionKey, parent) {
 
-    val PLAYER_COUNT = AtomicInteger(0)
-    val NEXT_ENTITY_ID = AtomicInteger(0)
-}
-
-object ServerInfo {
-
-    const val PROTOCOL = 755
-    const val WORLD_VERSION = 2724
+    override fun registerBlockEntities(schema: Schema): Map<String, Supplier<TypeTemplate>> = super.registerBlockEntities(schema).apply {
+        schema.registerSimple(this, "minecraft:sculk_sensor")
+    }
 }

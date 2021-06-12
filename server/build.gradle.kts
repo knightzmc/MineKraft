@@ -56,6 +56,7 @@ dependencies {
     implementation("it.unimi.dsi", "fastutil", Versions.FASTUTIL)
 
     // Miscellaneous
+    implementation("com.mojang", "datafixerupper", "4.0.26")
     implementation("net.kyori", "adventure-nbt")
     implementation("com.github.ajalt.clikt", "clikt", Versions.CLIKT)
     implementation("org.bstats", "bstats-base", Versions.BSTATS)

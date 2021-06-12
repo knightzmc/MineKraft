@@ -79,3 +79,5 @@ fun chunkInSpiral(id: Int, xOffset: Int = 0, zOffset: Int = 0): ChunkPosition {
         else -> ChunkPosition.ZERO
     }
 }
+
+fun Int.clamp(low: Int, high: Int) = if (this < low) low else if (this > high) high else this

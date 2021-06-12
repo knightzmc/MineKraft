@@ -16,18 +16,17 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package org.kryptonmc.krypton
+package org.kryptonmc.krypton.util.datafix.schema
 
-import java.util.concurrent.atomic.AtomicInteger
+import com.mojang.datafixers.DSL
+import com.mojang.datafixers.schemas.Schema
+import com.mojang.datafixers.types.templates.TypeTemplate
+import org.kryptonmc.krypton.util.datafix.References
+import java.util.function.Supplier
 
-object ServerStorage {
+fun Schema.equipment(): TypeTemplate = DSL.optionalFields(
+    "ArmorItems", DSL.list(References.ITEM_STACK.`in`(this)),
+    "HandItems", DSL.list(References.ITEM_STACK.`in`(this))
+)
 
-    val PLAYER_COUNT = AtomicInteger(0)
-    val NEXT_ENTITY_ID = AtomicInteger(0)
-}
-
-object ServerInfo {
-
-    const val PROTOCOL = 755
-    const val WORLD_VERSION = 2724
-}
+fun Schema.registerEntity(map: Map<String, Supplier<TypeTemplate>>, name: String) = register(map, name) { _ -> equipment() }
