@@ -16,17 +16,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package org.kryptonmc.krypton.space
+package org.kryptonmc.krypton.world.light
 
-class MutableVector3i(
-    var x: Int = 0,
-    var y: Int = 0,
-    var z: Int = 0
-) {
+enum class LightLayer(val surrounding: Int) {
 
-    fun set(x: Int, y: Int, z: Int) {
-        this.x = x
-        this.y = y
-        this.z = z
-    }
+    SKY(15),
+    BLOCK(0)
 }

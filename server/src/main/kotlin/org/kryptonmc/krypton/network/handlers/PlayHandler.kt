@@ -75,7 +75,6 @@ import org.kryptonmc.krypton.util.logger
 import org.kryptonmc.krypton.util.toAngle
 import org.kryptonmc.krypton.util.toSkinSettings
 import org.kryptonmc.krypton.world.block.BLOCK_LOADER
-import org.kryptonmc.krypton.world.block.KryptonBlock
 import java.util.Locale
 import kotlin.math.max
 

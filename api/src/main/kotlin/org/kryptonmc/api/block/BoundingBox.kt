@@ -8,51 +8,74 @@
  */
 package org.kryptonmc.api.block
 
-import org.kryptonmc.api.space.Vector
-
 /**
  * Represents a bounding box. This defines the box for any entity or block that may be collided with.
  * A bounding box is a three-dimensional space, with lower X, Y and Z coordinates and higher X, Y and Z coordinates.
  *
- * @param minimum the minimum coordinates for this bounding box
- * @param maximum the maximum coordinates for this bounding box
+ * @param minimumX the minimum X coordinate
+ * @param minimumY the minimum Y coordinate
+ * @param minimumZ the minimum Z coordinate
+ * @param maximumX the maximum X coordinate
+ * @param maximumY the maximum Y coordinate
+ * @param maximumZ the maximum Z coordinate
  */
 @Suppress("unused", "MemberVisibilityCanBePrivate")
-class BoundingBox(
-    val minimum: Vector,
-    val maximum: Vector
+data class BoundingBox(
+    val minimumX: Double,
+    val minimumY: Double,
+    val minimumZ: Double,
+    val maximumX: Double,
+    val maximumY: Double,
+    val maximumZ: Double
 ) : Cloneable {
 
     /**
-     * The size of this bounding box
-     *
-     * May create a new [Vector] instance if this is the first call
+     * The size of this box in the X direction
      */
-    val size by lazy { Vector(maximum.x - minimum.x, maximum.y - minimum.y, maximum.z - minimum.z) }
+    val sizeX = maximumX - minimumX
+
+    /**
+     * The size of this box in the Y direction
+     */
+    val sizeY = maximumY - minimumY
+
+    /**
+     * The size of this box in the Z direction
+     */
+    val sizeZ = maximumZ - minimumZ
 
     /**
      * The volume of this bounding box
      */
-    val volume = size.x * size.y * size.z
+    val volume = sizeX * sizeY * sizeZ
 
     /**
-     * The centre point of this bounding box
-     *
-     * May create a new [Vector] instance if this is the first call
+     * The centre position in the X direction
      */
-    val center by lazy { Vector(minimum.x + size.x * 0.5, minimum.y + size.y * 0.5, minimum.z + size.z * 0.5) }
+    val centerX = minimumX + sizeX * 0.5
 
     /**
-     * Create an empty bounding box
+     * The centre position in the Y direction
      */
-    constructor() : this(Vector.ZERO, Vector.ZERO)
+    val centerY = minimumY + sizeY * 0.5
+
+    /**
+     * The centre position in the Z direction
+     */
+    val centerZ = minimumZ + sizeZ * 0.5
 
     companion object {
 
         /**
-         * Constant for an empty bounding box
+         * Constant for an empty bounding box.
          */
         @JvmField
-        val EMPTY = BoundingBox()
+        val EMPTY = BoundingBox(0.0, 0.0, 0.0, 0.0, 0.0, 0.0)
+
+        /**
+         * Constant for a full block's bounding box.
+         */
+        @JvmField
+        val BLOCK = BoundingBox(0.0, 0.0, 0.0, 1.0, 1.0, 1.0)
     }
 }

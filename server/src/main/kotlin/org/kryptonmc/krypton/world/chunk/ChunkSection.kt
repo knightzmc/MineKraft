@@ -28,11 +28,7 @@ import org.kryptonmc.krypton.world.block.palette.PaletteHolder
 /**
  * A section of a chunk (*nah*). These are 16x16x16 areas that hold the actual block states and palette information
  */
-class ChunkSection(
-    val y: Int,
-    val blockLight: ByteArray = ByteArray(2048),
-    val skyLight: ByteArray = ByteArray(2048)
-) {
+class ChunkSection(val y: Int) {
 
     val palette = PaletteHolder(GlobalPalette)
     var nonEmptyBlockCount = 0

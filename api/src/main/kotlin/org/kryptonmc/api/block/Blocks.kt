@@ -1,8 +1,17 @@
+/*
+ * This file is part of the Krypton API, licensed under the MIT license.
+ *
+ * Copyright (C) 2021 KryptonMC and the contributors to the Krypton project.
+ *
+ * This project is licensed under the terms of the MIT license.
+ * For more details, please reference the LICENSE file in the api top-level directory.
+ */
 package org.kryptonmc.api.block
 
 import net.kyori.adventure.key.Key
 import org.kryptonmc.api.block.internal.BLOCK_LOADER
 
+@Suppress("LargeClass", "UndocumentedPublicClass", "UndocumentedPublicProperty")
 object Blocks {
 
     // @formatter:off
@@ -906,9 +915,21 @@ object Blocks {
     @JvmField val POTTED_FLOWERING_AZALEA_BUSH = get("minecraft:potted_flowering_azalea_bush")!!
 
     // @formatter:on
+    /**
+     * Gets a block by its [key].
+     *
+     * @param key the block's key
+     * @return the block with the given key, or null if there isn't one
+     */
     @JvmStatic
     operator fun get(key: Key) = BLOCK_LOADER.fromKey(key)
 
+    /**
+     * Gets a block by its [key].
+     *
+     * @param key the block's key
+     * @return the block with the given key, or null if there isn't one
+     */
     @JvmStatic
     operator fun get(key: String) = BLOCK_LOADER.fromKey(key)
 }

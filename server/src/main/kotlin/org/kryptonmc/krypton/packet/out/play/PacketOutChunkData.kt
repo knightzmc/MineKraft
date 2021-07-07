@@ -19,7 +19,6 @@
 package org.kryptonmc.krypton.packet.out.play
 
 import io.netty.buffer.ByteBuf
-import io.netty.buffer.PooledByteBufAllocator
 import io.netty.buffer.Unpooled
 import org.jglrxavpok.hephaistos.nbt.NBTCompound
 import org.kryptonmc.krypton.packet.state.PlayPacket

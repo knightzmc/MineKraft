@@ -1,3 +1,21 @@
+/*
+ * This file is part of the Krypton project, licensed under the GNU General Public License v3.0
+ *
+ * Copyright (C) 2021 KryptonMC and the contributors of the Krypton project
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
 package org.kryptonmc.krypton.world.block.palette
 
 import io.netty.buffer.ByteBuf
@@ -11,66 +29,55 @@ import org.kryptonmc.krypton.util.varIntSize
 import org.kryptonmc.krypton.util.writeLongArray
 import org.kryptonmc.krypton.world.block.BLOCKS
 import org.kryptonmc.krypton.world.data.BitStorage
-import java.util.concurrent.Semaphore
 import kotlin.math.max
 
 class PaletteHolder(private var palette: Palette) : (Int, Block) -> Int {
 
-    private val lock = Semaphore(1)
     private lateinit var storage: BitStorage
     private var bits = 0
         set(value) {
             if (field == value) return
             field = value
             palette = when {
-                field <= 4 -> {
-                    field = 4
+                field <= MINIMUM_PALETTE_SIZE -> {
+                    field = MINIMUM_PALETTE_SIZE
                     ArrayPalette(field, this)
                 }
-                field < 9 -> MapPalette(field, this)
+                field < GLOBAL_PALETTE_SIZE -> MapPalette(field, this)
                 else -> {
                     field = BLOCKS.size.ceillog2()
                     GlobalPalette
                 }
             }
-            storage = BitStorage(field, 4096)
+            storage = BitStorage(field, SIZE)
         }
 
     init {
-        bits = 4
+        bits = MINIMUM_PALETTE_SIZE
     }
 
-    fun getAndSet(x: Int, y: Int, z: Int, value: Block) = try {
-        lock.acquire()
-        getAndSet(indexOf(x, y, z), value)
-    } finally {
-        lock.release()
-    }
+    @Synchronized
+    fun getAndSet(x: Int, y: Int, z: Int, value: Block) = getAndSet(indexOf(x, y, z), value)
 
-    operator fun get(x: Int, y: Int, z: Int) = palette[storage[indexOf(x, y, z)]] ?: DEFAULT
+    operator fun get(x: Int, y: Int, z: Int) = get(indexOf(x, y, z))
 
-    operator fun set(x: Int, y: Int, z: Int, value: Block) = try {
-        lock.acquire()
-        set(indexOf(x, y, z), value)
-    } finally {
-        lock.release()
-    }
+    operator fun get(index: Int) = palette[storage[index]] ?: DEFAULT
 
-    fun write(buf: ByteBuf) = try {
-        lock.acquire()
+    @Synchronized
+    operator fun set(x: Int, y: Int, z: Int, value: Block) = set(indexOf(x, y, z), value)
+
+    @Synchronized
+    fun write(buf: ByteBuf) {
         buf.writeByte(bits)
         palette.write(buf)
         buf.writeLongArray(storage.data)
-    } finally {
-        lock.release()
     }
 
-    fun load(paletteData: NBTList<NBTCompound>, states: LongArray) = try {
-        lock.acquire()
-        val bits = max(4, paletteData.size.ceillog2())
+    fun load(paletteData: NBTList<NBTCompound>, states: LongArray) {
+        val bits = max(MINIMUM_PALETTE_SIZE, paletteData.size.ceillog2())
         if (bits != this.bits) this.bits = bits
         palette.load(paletteData)
-        val storageBits = states.size * 64 / 4096
+        val storageBits = states.size * 64 / SIZE
         when {
             palette === GlobalPalette -> {
                 val newPalette = MapPalette(bits, DUMMY_RESIZER).apply { load(paletteData) }
@@ -83,16 +90,14 @@ class PaletteHolder(private var palette: Palette) : (Int, Block) -> Int {
                 for (i in 0 until SIZE) storage[i] = bitStorage[i]
             }
         }
-    } finally {
-        lock.release()
     }
 
-    fun save(tag: NBTCompound) = try {
-        lock.acquire()
+    @Synchronized
+    fun save(tag: NBTCompound) {
         val newPalette = MapPalette(bits, DUMMY_RESIZER)
         var default = DEFAULT
         var defaultId = newPalette[DEFAULT]
-        val states = IntArray(4096)
+        val states = IntArray(SIZE)
 
         for (i in 0 until SIZE) {
             val value = palette[storage[i]] ?: DEFAULT
@@ -104,13 +109,11 @@ class PaletteHolder(private var palette: Palette) : (Int, Block) -> Int {
         }
 
         val paletteData = newPalette.save()
-        tag[PALETTE_TAG] = paletteData
-        val bits = max(4, paletteData.size.ceillog2())
+        tag["Palette"] = paletteData
+        val bits = max(MINIMUM_PALETTE_SIZE, paletteData.size.ceillog2())
         val storage = BitStorage(bits, SIZE)
         for (i in states.indices) storage[i] = states[i]
-        tag.setLongArray(STATES_TAG, storage.data)
-    } finally {
-        lock.release()
+        tag.setLongArray("BlockStates", storage.data)
     }
 
     fun count(consumer: (Block, Int) -> Unit) {
@@ -143,8 +146,6 @@ class PaletteHolder(private var palette: Palette) : (Int, Block) -> Int {
         const val GLOBAL_PALETTE_SIZE = 9
         const val MINIMUM_PALETTE_SIZE = 4
         private const val SIZE = 4096
-        private const val PALETTE_TAG = "Palette"
-        private const val STATES_TAG = "BlockStates"
         private val DEFAULT = Blocks.AIR
         private val DUMMY_RESIZER: (Int, Block) -> Int = { _, _ -> 0 }
     }

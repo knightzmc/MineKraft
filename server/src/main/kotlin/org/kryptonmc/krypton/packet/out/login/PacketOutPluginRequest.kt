@@ -19,9 +19,7 @@
 package org.kryptonmc.krypton.packet.out.login
 
 import io.netty.buffer.ByteBuf
-import net.kyori.adventure.key.Key
 import org.kryptonmc.krypton.packet.state.LoginPacket
-import org.kryptonmc.krypton.util.writeKey
 import org.kryptonmc.krypton.util.writeString
 import org.kryptonmc.krypton.util.writeVarInt
 

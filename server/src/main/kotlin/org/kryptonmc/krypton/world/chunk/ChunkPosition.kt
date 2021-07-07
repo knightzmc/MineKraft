@@ -44,8 +44,12 @@ data class ChunkPosition(val x: Int, val z: Int) {
 
     operator fun contains(position: Vector3i) = GenericMath.floor(position.x() / 16.0) == x && GenericMath.floor(position.z() / 16.0) == z
 
+    fun toLong() = toLong(x, z)
+
     companion object {
 
         val ZERO = ChunkPosition(0, 0)
+
+        fun toLong(x: Int, z: Int) = x.toLong() and 4294967295L or (z.toLong() and 4294967295L shl 32)
     }
 }

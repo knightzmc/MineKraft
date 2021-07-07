@@ -19,11 +19,14 @@
 package org.kryptonmc.krypton.world
 
 import com.mojang.serialization.Codec
+import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap
 import org.jglrxavpok.hephaistos.nbt.NBTCompound
 import org.jglrxavpok.hephaistos.nbt.NBTList
 import org.jglrxavpok.hephaistos.nbt.NBTString
 import org.jglrxavpok.hephaistos.nbt.NBTTypes
 import org.jglrxavpok.hephaistos.nbt.NBTWriter
+import org.kryptonmc.api.block.Block
+import org.kryptonmc.api.block.Blocks
 import org.kryptonmc.api.entity.Entity
 import org.kryptonmc.api.entity.EntityType
 import org.kryptonmc.api.registry.RegistryKey
@@ -55,8 +58,8 @@ import org.kryptonmc.krypton.world.chunk.KryptonChunk
 import org.kryptonmc.api.world.dimension.DimensionTypes
 import org.kryptonmc.krypton.registry.InternalRegistryKeys
 import org.kryptonmc.krypton.util.KEY_CODEC
+import org.kryptonmc.krypton.world.chunk.ChunkPosition
 import org.kryptonmc.krypton.world.generation.WorldGenerationSettings
-import org.spongepowered.math.vector.Vector2d
 import org.spongepowered.math.vector.Vector3i
 import java.io.Writer
 import java.nio.file.Files
@@ -102,17 +105,18 @@ data class KryptonWorld(
     override val version: GameVersion,
     override val maxHeight: Int,
     val serverBrands: MutableSet<String>,
-) : World, WorldHeightAccessor {
+) : World, HeightAccessor, BlockAccessor {
 
     override val seed = generationSettings.seed
 
-    override val chunks: MutableSet<KryptonChunk> = ConcurrentHashMap.newKeySet()
+    val chunkMap = Long2ObjectOpenHashMap<KryptonChunk>()
+    override val chunks = chunkMap.values
     val players: MutableSet<KryptonPlayer> = ConcurrentHashMap.newKeySet()
     val entities: MutableSet<KryptonEntity> = ConcurrentHashMap.newKeySet()
 
-    val chunkManager = ChunkManager(this)
     val dimension = OVERWORLD
     override val dimensionType = DimensionTypes.OVERWORLD
+    val chunkManager = ChunkManager(this)
 
     override val height = dimensionType.height
     override val minimumBuildHeight = dimensionType.minimumY
@@ -121,6 +125,10 @@ data class KryptonWorld(
     override var rainLevel = 0F
     private var oldThunderLevel = 0F
     override var thunderLevel = 0F
+
+    init {
+        chunkManager.preload()
+    }
 
     override fun <T : Entity> spawnEntity(type: EntityType<T>, location: Vector) {
         if (!type.isSummonable) return
@@ -148,6 +156,12 @@ data class KryptonWorld(
 
     override fun spawnPainting(location: Vector) = Unit // TODO: Implement painting spawning
 
+    override fun getBlock(x: Int, y: Int, z: Int): Block {
+        if (isOutsideBuildHeight(y)) return Blocks.VOID_AIR
+        val chunk = getChunkAt(x shr 4, z shr 4) ?: return Blocks.AIR
+        return chunk.getBlock(x, y, z)
+    }
+
     fun tick(profiler: Profiler) {
         if (players.isEmpty()) return // don't tick the world if there's no players in it
 
@@ -161,65 +175,43 @@ data class KryptonWorld(
         // TODO: Actually add in some probabilities and calculations for rain and thunder storms
         profiler.push("weather")
         val raining = isRaining
-        if (gameRules[GameRules.DO_WEATHER_CYCLE]) {
-            if (clearWeatherTime > 0) {
-                --clearWeatherTime
-                thunderTime = if (isThundering) 0 else 1
-                rainTime = if (isRaining) 0 else 1
-                isThundering = false
-                isRaining = false
-            } else {
-                profiler.push("calculate thunder")
-                if (thunderTime > 0) {
-                    if (thunderTime-- == 0) isThundering = !isThundering
+        if (dimensionType.hasSkylight) {
+            if (gameRules[GameRules.DO_WEATHER_CYCLE]) {
+                if (clearWeatherTime > 0) {
+                    --clearWeatherTime
+                    thunderTime = if (isThundering) 0 else 1
+                    rainTime = if (isRaining) 0 else 1
+                    isThundering = false
+                    isRaining = false
                 } else {
-                    thunderTime = if (isThundering) Random.nextInt(12_000) + 3600 else Random.nextInt(168_000) + 12_000
+                    if (thunderTime > 0) {
+                        if (thunderTime-- == 0) isThundering = !isThundering
+                    } else {
+                        thunderTime = if (isThundering) Random.nextInt(12_000) + 3600 else Random.nextInt(168_000) + 12_000
+                    }
+                    if (rainTime > 0) {
+                        if (rainTime-- == 0) isRaining = !isRaining
+                    } else {
+                        rainTime = Random.nextInt(if (isRaining) 12_000 else 168_000) + 12_000
+                    }
                 }
-                profiler.pop()
-                profiler.push("calculate rain")
-                if (rainTime > 0) {
-                    if (rainTime-- == 0) isRaining = !isRaining
-                } else {
-                    rainTime = Random.nextInt(if (isRaining) 12_000 else 168_000) + 12_000
-                }
-                profiler.pop()
             }
+            oldThunderLevel = thunderLevel
+            thunderLevel = if (isThundering) (thunderLevel + 0.01).toFloat() else (thunderLevel - 0.01).toFloat()
+            thunderLevel = min(max(thunderLevel, 0F), 1F)
+            oldRainLevel = rainLevel
+            rainLevel = if (isRaining) (rainLevel + 0.01).toFloat() else (rainLevel - 0.01).toFloat()
+            rainLevel = min(max(rainLevel, 0F), 1F)
         }
-        profiler.push("set levels")
-        oldThunderLevel = thunderLevel
-        thunderLevel = if (isThundering) (thunderLevel + 0.01).toFloat() else (thunderLevel - 0.01).toFloat()
-        thunderLevel = min(max(thunderLevel, 0F), 1F)
-        oldRainLevel = rainLevel
-        rainLevel = if (isRaining) (rainLevel + 0.01).toFloat() else (rainLevel - 0.01).toFloat()
-        rainLevel = min(max(rainLevel, 0F), 1F)
         profiler.pop()
 
-        profiler.push("broadcast weather changes")
-        if (oldRainLevel != rainLevel) {
-            val rainPacket = PacketOutChangeGameState(GameState.RAIN_LEVEL_CHANGE, rainLevel)
-            players.forEach { it.session.sendPacket(rainPacket) }
-        }
-        if (oldThunderLevel != thunderLevel) {
-            val thunderPacket = PacketOutChangeGameState(GameState.THUNDER_LEVEL_CHANGE, thunderLevel)
-            players.forEach { it.session.sendPacket(thunderPacket) }
-        }
+        if (oldRainLevel != rainLevel) server.playerManager.sendToAll(PacketOutChangeGameState(GameState.RAIN_LEVEL_CHANGE, rainLevel), this)
+        if (oldThunderLevel != thunderLevel) server.playerManager.sendToAll(PacketOutChangeGameState(GameState.THUNDER_LEVEL_CHANGE, thunderLevel), this)
         if (raining != isRaining) {
-            if (raining) {
-                val rainPacket = PacketOutChangeGameState(GameState.END_RAINING)
-                players.forEach { it.session.sendPacket(rainPacket) }
-            } else {
-                val rainPacket = PacketOutChangeGameState(GameState.BEGIN_RAINING)
-                players.forEach { it.session.sendPacket(rainPacket) }
-            }
-            val rainLevelPacket = PacketOutChangeGameState(GameState.RAIN_LEVEL_CHANGE, rainLevel)
-            val thunderLevelPacket = PacketOutChangeGameState(GameState.THUNDER_LEVEL_CHANGE, thunderLevel)
-            players.forEach {
-                it.session.sendPacket(rainLevelPacket)
-                it.session.sendPacket(thunderLevelPacket)
-            }
+            server.playerManager.sendToAll(PacketOutChangeGameState(if (raining) GameState.END_RAINING else GameState.BEGIN_RAINING), this)
+            server.playerManager.sendToAll(PacketOutChangeGameState(GameState.RAIN_LEVEL_CHANGE, rainLevel))
+            server.playerManager.sendToAll(PacketOutChangeGameState(GameState.THUNDER_LEVEL_CHANGE, thunderLevel))
         }
-        profiler.pop()
-        profiler.pop()
 
         profiler.push("chunk tick")
         chunks.forEach { chunk -> chunk.tick(players.count { it.location in chunk.position }) }
@@ -313,6 +305,8 @@ data class KryptonWorld(
         }
         chunks.forEach { output.writeRow(it.position.x, it.position.z, it.world) }
     }
+
+    private fun getChunkAt(x: Int, z: Int): KryptonChunk? = chunkMap[ChunkPosition.toLong(x, z)]
 
     companion object {
 

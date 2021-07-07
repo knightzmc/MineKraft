@@ -21,7 +21,6 @@ package org.kryptonmc.krypton.network.handlers
 import com.velocitypowered.natives.util.Natives
 import io.netty.buffer.Unpooled
 import kotlinx.coroutines.launch
-import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.Component.translatable

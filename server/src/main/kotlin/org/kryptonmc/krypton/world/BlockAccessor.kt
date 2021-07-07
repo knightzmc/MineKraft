@@ -16,17 +16,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package org.kryptonmc.krypton.space
+package org.kryptonmc.krypton.world
 
-class MutableVector3i(
-    var x: Int = 0,
-    var y: Int = 0,
-    var z: Int = 0
-) {
+import org.kryptonmc.api.block.Block
 
-    fun set(x: Int, y: Int, z: Int) {
-        this.x = x
-        this.y = y
-        this.z = z
-    }
+interface BlockAccessor : HeightAccessor {
+
+    val maximumLightLevel: Int
+        get() = 15
+
+    fun getBlock(x: Int, y: Int, z: Int): Block
+
+    fun lightEmission(x: Int, y: Int, z: Int): Int = getBlock(x, y, z).lightEmission
 }

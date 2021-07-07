@@ -33,7 +33,6 @@ import org.kryptonmc.krypton.KryptonServer
 import org.kryptonmc.krypton.KryptonServer.KryptonServerInfo
 import org.kryptonmc.krypton.ServerInfo
 import org.kryptonmc.krypton.locale.Messages
-import org.kryptonmc.krypton.util.chunkInSpiral
 import org.kryptonmc.krypton.util.concurrent.NamedThreadFactory
 import org.kryptonmc.krypton.util.datafix.DATA_FIXER
 import org.kryptonmc.krypton.util.datafix.References
@@ -60,7 +59,6 @@ import kotlin.io.path.inputStream
 import kotlin.io.path.outputStream
 import kotlin.system.exitProcess
 
-@Suppress("MemberVisibilityCanBePrivate")
 class KryptonWorldManager(override val server: KryptonServer, name: String) : WorldManager {
 
     private val worldExecutor = Executors.newCachedThreadPool(NamedThreadFactory("World Handler %d"))

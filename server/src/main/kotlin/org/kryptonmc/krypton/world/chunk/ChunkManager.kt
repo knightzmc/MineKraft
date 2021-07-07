@@ -18,46 +18,55 @@
  */
 package org.kryptonmc.krypton.world.chunk
 
+import ca.spottedleaf.starlight.SWMRNibbleArray
+import ca.spottedleaf.starlight.StarLightEngine
+import ca.spottedleaf.starlight.StarLightManager
 import com.github.benmanes.caffeine.cache.Cache
 import com.github.benmanes.caffeine.cache.Caffeine
 import org.jglrxavpok.hephaistos.nbt.NBT
 import org.jglrxavpok.hephaistos.nbt.NBTCompound
 import org.jglrxavpok.hephaistos.nbt.NBTList
-import org.jglrxavpok.hephaistos.nbt.NBTLongArray
-import org.jglrxavpok.hephaistos.nbt.NBTString
 import org.jglrxavpok.hephaistos.nbt.NBTTypes
-import org.kryptonmc.api.util.toKey
 import org.kryptonmc.api.world.Biome
-import org.kryptonmc.krypton.util.calculateBits
+import org.kryptonmc.krypton.util.WorldUtil
 import org.kryptonmc.krypton.util.chunkInSpiral
+import org.kryptonmc.krypton.util.toArea
 import org.kryptonmc.krypton.world.Heightmap
-import org.kryptonmc.krypton.world.Heightmap.Type.MOTION_BLOCKING
-import org.kryptonmc.krypton.world.Heightmap.Type.MOTION_BLOCKING_NO_LEAVES
-import org.kryptonmc.krypton.world.Heightmap.Type.OCEAN_FLOOR
-import org.kryptonmc.krypton.world.Heightmap.Type.WORLD_SURFACE
-import org.kryptonmc.krypton.world.HeightmapBuilder
 import org.kryptonmc.krypton.world.KryptonWorld
-import org.kryptonmc.krypton.world.data.BitStorage
+import org.kryptonmc.krypton.world.light.LightLayer
 import org.kryptonmc.krypton.world.region.RegionFileManager
-import org.kryptonmc.krypton.world.transform
 import java.util.EnumSet
-import java.util.LinkedList
 import java.util.concurrent.TimeUnit
 
-class ChunkManager(private val world: KryptonWorld) {
+class ChunkManager(val world: KryptonWorld) {
 
     private val regionFileManager = RegionFileManager(world.folder.resolve("region"), world.server.config.advanced.synchronizeChunkWrites)
     private val chunkCache: Cache<ChunkPosition, KryptonChunk> = Caffeine.newBuilder()
         .maximumSize(512)
         .expireAfterWrite(10, TimeUnit.MINUTES)
         .build()
+    private val viewDistance = world.server.config.world.viewDistance
+    val lightEngine = StarLightManager(this, world.dimensionType.hasSkylight)
+
+    operator fun get(x: Int, z: Int): KryptonChunk? = chunkCache.getIfPresent(ChunkPosition(x, z))
+
+    fun preload() {
+        repeat(viewDistance.toArea()) {
+            load(chunkInSpiral(it))
+        }
+    }
 
     fun load(positions: List<ChunkPosition>): List<KryptonChunk> {
         val chunks = mutableListOf<KryptonChunk>()
-        positions.forEach { chunks.add(load(it)) }
-        world.chunks += chunks
+        positions.forEach {
+            val chunk = load(it)
+            world.chunkMap[it.toLong()] = chunk
+            chunks += chunk
+        }
         return chunks
     }
+
+    fun load(x: Int, z: Int) = load(ChunkPosition(x, z))
 
     fun load(position: ChunkPosition): KryptonChunk {
         val cachedChunk = chunkCache.getIfPresent(position)
@@ -66,21 +75,36 @@ class ChunkManager(private val world: KryptonWorld) {
         val nbt = regionFileManager.read(position).getCompound("Level")
         val heightmaps = nbt.getCompound("Heightmaps")
 
+        // Light data
+        val blockNibbles = StarLightEngine.getFilledEmptyLight(world)
+        val skyNibbles = StarLightEngine.getFilledEmptyLight(world)
+        val minSection = WorldUtil.getMinLightSection(world)
+        val hasSkyLight = world.dimensionType.hasSkylight
+
         val sectionList = nbt.getList<NBTCompound>("Sections")
-        val sections = arrayOfNulls<ChunkSection>(sectionList.size)
+        val sections = arrayOfNulls<ChunkSection>(world.sectionCount)
         for (i in sectionList.indices) {
             val sectionData = sectionList[i]
             val y = sectionData.getByte("Y").toInt()
-            if (y == -1 || y == 16) continue
             if (sectionData.contains("Palette", NBTTypes.TAG_List) && sectionData.contains("BlockStates", NBTTypes.TAG_Long_Array)) {
-                val section = ChunkSection(
-                    y,
-                    sectionData.getByteArray("BlockLight"),
-                    sectionData.getByteArray("SkyLight")
-                )
+                val section = ChunkSection(y)
                 section.palette.load(sectionData.getList("Palette"), sectionData.getLongArray("BlockStates"))
                 section.recount()
                 if (!section.isEmpty()) sections[world.sectionIndexFromY(y)] = section
+            }
+            if (nbt["isLightOn"] != null) {
+                blockNibbles[y - minSection] = if (sectionData.contains("BlockLight", NBTTypes.TAG_Byte_Array)) {
+                    SWMRNibbleArray(sectionData.getByteArray("BlockLight").clone(), sectionData.getInt("starlight.blocklight_state"))
+                } else {
+                    SWMRNibbleArray(null, sectionData.getInt("starlight.blocklight_state"))
+                }
+                if (hasSkyLight) {
+                    skyNibbles[y - minSection] = if (sectionData.contains("SkyLight", NBTTypes.TAG_Byte_Array)) {
+                        SWMRNibbleArray(sectionData.getByteArray("SkyLight").clone(), sectionData.getInt("starlight.skylight_state"))
+                    } else {
+                        SWMRNibbleArray(null, sectionData.getInt("starlight.skylight_state"))
+                    }
+                }
             }
         }
 
@@ -99,11 +123,15 @@ class ChunkManager(private val world: KryptonWorld) {
         )
         chunkCache.put(position, chunk)
 
+        chunk.blockNibbles = blockNibbles
+        chunk.skyNibbles = skyNibbles
+
         val noneOf = EnumSet.noneOf(Heightmap.Type::class.java)
         Heightmap.Type.POST_FEATURES.forEach {
             if (heightmaps.contains(it.name, NBTTypes.TAG_Long_Array)) chunk.setHeightmap(it, heightmaps.getLongArray(it.name)) else noneOf.add(it)
         }
         Heightmap.prime(chunk, noneOf)
+        lightEngine.lightChunk(chunk, true)
         return chunk
     }
 
@@ -115,6 +143,8 @@ class ChunkManager(private val world: KryptonWorld) {
         chunk.lastUpdate = lastUpdate
         regionFileManager.write(chunk.position, chunk.serialize())
     }
+
+    fun onLightUpdate(layer: LightLayer, x: Int, y: Int, z: Int) = chunkCache.getIfPresent(ChunkPosition(x, z))?.onLightUpdate(layer, y)
 }
 
 private fun KryptonChunk.serialize(): NBTCompound {
@@ -137,16 +167,26 @@ private fun KryptonChunk.serialize(): NBTCompound {
         .setInt("xPos", position.x)
         .setInt("zPos", position.z)
 
+    val minSection = WorldUtil.getMinLightSection(world)
     val sectionList = NBTList<NBTCompound>(NBTTypes.TAG_Compound)
-    for (i in minimumLightSection until maximumLightSection) {
+    val lightEngine = world.chunkManager.lightEngine
+    for (i in lightEngine.minLightSection until lightEngine.maxLightSection) {
         val section = sections.asSequence().filter { it != null && it.y shr 4 == i }.firstOrNull()
-        if (section != null) sectionList.add(NBTCompound()
-            .setByte("Y", (i and 255).toByte())
-            .apply {
-                section.palette.save(this)
-                if (section.blockLight.isNotEmpty()) setByteArray("BlockLight", section.blockLight)
-                if (section.skyLight.isNotEmpty()) setByteArray("SkyLight", section.skyLight)
-            })
+        val blockNibble = blockNibbles[i - minSection].saveState
+        val skyNibble = skyNibbles[i - minSection].saveState
+        if (section != null || blockNibble != null || skyNibble != null) {
+            val sectionData = NBTCompound().setByte("Y", (i and 255).toByte())
+            section?.palette?.save(sectionData)
+            if (blockNibble != null) {
+                if (blockNibble.data != null) sectionData.setByteArray("BlockLight", blockNibble.data)
+                sectionData.setInt("starlight.blocklight_state", blockNibble.state)
+            }
+            if (skyNibble != null) {
+                if (skyNibble.data != null) sectionData.setByteArray("SkyLight", skyNibble.data)
+                sectionData.setInt("starlight.skylight_state", skyNibble.state)
+            }
+            sectionList.add(sectionData)
+        }
     }
     data["Sections"] = sectionList
 

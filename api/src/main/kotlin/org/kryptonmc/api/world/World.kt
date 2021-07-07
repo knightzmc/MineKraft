@@ -10,6 +10,7 @@ package org.kryptonmc.api.world
 
 import net.kyori.adventure.audience.ForwardingAudience
 import org.kryptonmc.api.Server
+import org.kryptonmc.api.block.Block
 import org.kryptonmc.api.entity.Entity
 import org.kryptonmc.api.entity.EntityType
 import org.kryptonmc.api.space.Vector
@@ -66,7 +67,7 @@ interface World : ForwardingAudience {
     /**
      * The set of chunks currently loaded in this world.
      */
-    val chunks: Set<Chunk>
+    val chunks: Collection<Chunk>
 
     /**
      * This world's border.
@@ -132,6 +133,21 @@ interface World : ForwardingAudience {
      * The game rules for this world.
      */
     val gameRules: GameRuleHolder
+
+    /**
+     * Gets a block at the given [x], [y], and [z] coordinates.
+     *
+     * Will return [void air][org.kryptonmc.api.block.Blocks.VOID_AIR] if the
+     * coordinates exceed the world height, or
+     * [air][org.kryptonmc.api.block.Blocks.AIR] if there is no chunk loaded
+     * at the given coordinates.
+     *
+     * @param x the X coordinate of the block
+     * @param y the Y coordinate of the block
+     * @param z the Z coordinate of the block
+     * @return see above
+     */
+    fun getBlock(x: Int, y: Int, z: Int): Block
 
     /**
      * Saves this world to disk. Exposed as a function of [World] to allow for custom world implementations

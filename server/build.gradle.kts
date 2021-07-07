@@ -129,6 +129,12 @@ license {
         "**/plugin/loader/KryptonPluginDescription.kt",
         "**/plugin/loader/PluginLoader.kt",
         "**/scheduling/KryptonScheduler.kt",
-        "**/util/bytebufs.kt"
+        "**/util/bytebufs.kt",
+        // Couldn't find the license header to use for Starlight, or for the utility classes from Tuinity
+        // If you're reading this and you know what the license header should be, feel free to open an issue
+        "**/util/CoordinateUtils.java",
+        "**/util/IntegerUtil.java",
+        "**/util/WorldUtil.java",
+        "**/ca/spottedleaf/starlight/*.java"
     )
 }

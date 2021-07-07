@@ -16,17 +16,30 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package org.kryptonmc.krypton.space
+package org.kryptonmc.krypton.world
 
-class MutableVector3i(
-    var x: Int = 0,
-    var y: Int = 0,
-    var z: Int = 0
-) {
+interface HeightAccessor {
 
-    fun set(x: Int, y: Int, z: Int) {
-        this.x = x
-        this.y = y
-        this.z = z
-    }
+    val height: Int
+    val minimumBuildHeight: Int
+
+    val maximumBuildHeight: Int
+        get() = minimumBuildHeight + height
+
+    val minimumSection: Int
+        get() = minimumBuildHeight shr 4
+
+    val maximumSection: Int
+        get() = (maximumBuildHeight - 1 shr 4) + 1
+
+    val sectionCount: Int
+        get() = maximumSection - minimumSection
+
+    fun sectionIndexFromY(y: Int) = y - minimumSection
+
+    fun sectionYFromIndex(index: Int) = index + minimumSection
+
+    fun sectionIndex(y: Int) = sectionIndexFromY(y shr 4)
+
+    fun isOutsideBuildHeight(y: Int) = y < minimumBuildHeight || y >= maximumBuildHeight
 }

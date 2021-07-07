@@ -163,6 +163,11 @@ fun ByteBuf.readAvailableBytes(length: Int): ByteArray {
 
 fun ByteBuf.readAllAvailableBytes() = readAvailableBytes(readableBytes())
 
+fun ByteBuf.writeByteArray(array: ByteArray) {
+    writeVarInt(array.size)
+    writeBytes(array)
+}
+
 fun ByteBuf.writeLongArray(array: LongArray) {
     writeVarInt(array.size)
     array.forEach { writeLong(it) }

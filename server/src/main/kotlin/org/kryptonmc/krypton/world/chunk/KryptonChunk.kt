@@ -18,23 +18,20 @@
  */
 package org.kryptonmc.krypton.world.chunk
 
+import ca.spottedleaf.starlight.StarLightEngine
 import org.jglrxavpok.hephaistos.nbt.NBTCompound
 import org.kryptonmc.api.block.Block
 import org.kryptonmc.api.block.Blocks
-import org.kryptonmc.api.inventory.item.Material
 import org.kryptonmc.api.space.Position
 import org.kryptonmc.api.world.Biome
-import org.kryptonmc.api.world.World
 import org.kryptonmc.api.world.chunk.Chunk
-import org.kryptonmc.krypton.locale.Messages
 import org.kryptonmc.krypton.util.logger
+import org.kryptonmc.krypton.world.BlockAccessor
 import org.kryptonmc.krypton.world.Heightmap
-import org.kryptonmc.krypton.world.HeightmapBuilder
 import org.kryptonmc.krypton.world.KryptonWorld
-import org.kryptonmc.krypton.world.WorldHeightAccessor
-import org.kryptonmc.krypton.world.block.KryptonBlock
-import org.kryptonmc.krypton.world.data.BitStorage
+import org.kryptonmc.krypton.world.light.LightLayer
 import org.spongepowered.math.vector.Vector3i
+import java.util.BitSet
 import java.util.EnumMap
 
 class KryptonChunk(
@@ -46,19 +43,25 @@ class KryptonChunk(
     override var inhabitedTime: Long,
     val carvingMasks: Pair<ByteArray, ByteArray>,
     val structures: NBTCompound
-) : Chunk, WorldHeightAccessor {
+) : Chunk, BlockAccessor {
 
     val heightmaps = EnumMap<Heightmap.Type, Heightmap>(Heightmap.Type::class.java)
+    val lightEngine = world.chunkManager.lightEngine
 
     override val height = world.height
     override val minimumBuildHeight = world.minimumBuildHeight
 
-    val lightSectionCount = sectionCount + 2
-    val minimumLightSection = minimumSection - 1
-    val maximumLightSection = minimumLightSection + lightSectionCount
-
     override val x = position.x
     override val z = position.z
+
+    val blockChangedLightSectionFilter = BitSet()
+    val skyChangedLightSectionFilter = BitSet()
+    var isLightOn = true
+
+    @Volatile var blockNibbles = StarLightEngine.getFilledEmptyLight(world)
+    @Volatile var skyNibbles = StarLightEngine.getFilledEmptyLight(world)
+    @Volatile var skyEmptinessMap: BooleanArray? = null
+    @Volatile var blockEmptinessMap: BooleanArray? = null
 
     override fun getBlock(x: Int, y: Int, z: Int): Block {
         val sectionIndex = sectionIndex(y)
@@ -103,6 +106,17 @@ class KryptonChunk(
     }
 
     fun setHeightmap(type: Heightmap.Type, data: LongArray) = heightmaps.getOrPut(type) { Heightmap(this, type) }.setData(this, type, data)
+
+    fun onLightUpdate(layer: LightLayer, y: Int) {
+        val bottomSection = lightEngine.minLightSection
+        val topSection = lightEngine.maxLightSection
+        if (y !in bottomSection..topSection) return
+        val actual = y - bottomSection
+        when (layer) {
+            LightLayer.SKY -> skyChangedLightSectionFilter.set(actual)
+            LightLayer.BLOCK -> blockChangedLightSectionFilter.set(actual)
+        }
+    }
 
     val highestSection: ChunkSection?
         get() {
