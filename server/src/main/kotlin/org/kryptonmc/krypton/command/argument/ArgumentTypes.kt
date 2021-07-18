@@ -25,15 +25,8 @@ import net.kyori.adventure.key.Key
 import net.kyori.adventure.key.Key.key
 import org.kryptonmc.krypton.command.argument.serializer.ArgumentSerializer
 import org.kryptonmc.krypton.command.argument.serializer.EmptyArgumentSerializer
-import org.kryptonmc.krypton.command.argument.serializer.brigadier.DoubleArgumentSerializer
-import org.kryptonmc.krypton.command.argument.serializer.brigadier.FloatArgumentSerializer
-import org.kryptonmc.krypton.command.argument.serializer.brigadier.IntegerArgumentSerializer
-import org.kryptonmc.krypton.command.argument.serializer.brigadier.LongArgumentSerializer
-import org.kryptonmc.krypton.command.argument.serializer.brigadier.StringArgumentSerializer
-import org.kryptonmc.krypton.command.arguments.NBTArgument
-import org.kryptonmc.krypton.command.arguments.NBTCompoundArgument
-import org.kryptonmc.krypton.command.arguments.SummonEntityArgument
-import org.kryptonmc.krypton.command.arguments.VectorArgument
+import org.kryptonmc.krypton.command.argument.serializer.brigadier.*
+import org.kryptonmc.krypton.command.arguments.*
 import org.kryptonmc.krypton.locale.Messages
 import org.kryptonmc.krypton.util.logger
 import org.kryptonmc.krypton.util.writeKey
@@ -65,6 +58,7 @@ object ArgumentTypes {
         register<NBTCompoundArgument>("nbt_compound_tag", EmptyArgumentSerializer())
         register<SummonEntityArgument>("entity_summon", EmptyArgumentSerializer())
         register<VectorArgument>("vec3", EmptyArgumentSerializer())
+        register<EntityArgument>("entity", EmptyArgumentSerializer())
     }
 
     operator fun get(key: Key) = BY_NAME[key]

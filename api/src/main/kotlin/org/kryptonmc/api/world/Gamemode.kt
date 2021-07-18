@@ -8,10 +8,9 @@
  */
 package org.kryptonmc.api.world
 
-import org.kryptonmc.api.world.Gamemode.ADVENTURE
-import org.kryptonmc.api.world.Gamemode.CREATIVE
-import org.kryptonmc.api.world.Gamemode.SPECTATOR
-import org.kryptonmc.api.world.Gamemode.SURVIVAL
+import net.kyori.adventure.key.Key
+import net.kyori.adventure.key.Key.key
+import org.kryptonmc.api.world.Gamemode.*
 
 /**
  * Represents a game mode, those being [SURVIVAL], [CREATIVE], [ADVENTURE]
@@ -51,6 +50,9 @@ enum class Gamemode {
     val canBuild: Boolean
         get() = this == SURVIVAL || this == CREATIVE
 
+    val key: Key
+        get() = key("gamemode_${this.name.lowercase()}")
+
     override fun toString() = name.lowercase()
 
     companion object {
@@ -62,6 +64,18 @@ enum class Gamemode {
         fun fromId(id: Int): Gamemode? {
             if (id !in 0 until values().size) return null
             return values()[id]
+        }
+
+        /**
+         * Retrieves a game mode from its name.
+         */
+        @JvmStatic
+        fun fromName(name: String): Gamemode? {
+            return try {
+                valueOf(name.uppercase())
+            } catch (e: IllegalArgumentException) {
+                null
+            }
         }
     }
 }

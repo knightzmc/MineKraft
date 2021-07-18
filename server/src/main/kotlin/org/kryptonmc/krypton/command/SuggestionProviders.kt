@@ -25,6 +25,8 @@ import net.kyori.adventure.text.Component.translatable
 import org.kryptonmc.api.command.Sender
 import org.kryptonmc.api.entity.EntityType
 import org.kryptonmc.api.registry.Registries
+import org.kryptonmc.api.world.Gamemode
+import org.kryptonmc.krypton.KryptonServer
 import org.kryptonmc.krypton.adventure.toMessage
 
 // TODO: Use this later
@@ -40,6 +42,15 @@ object SuggestionProviders {
             translatable("entity.${key.namespace()}.${key.value().replace("/", ".")}").toMessage()
         }
     }
+    val GAMEMODES = register(key("gamemodes")) { _, builder ->
+        builder.suggest(Gamemode.values().map { it.name.lowercase() })
+    }
+    val PLAYERS: (KryptonServer) -> SuggestionProvider<Sender> = { server ->
+        register(key("players")) { _, builder ->
+            builder.suggest(server.players.map { it.name })
+        }
+    }
+
 
     fun register(key: Key, provider: SuggestionProvider<Sender>): SuggestionProvider<Sender> {
         require(key !in PROVIDERS_BY_NAME) { "A command suggestion provider is already registered with the given key $key!" }

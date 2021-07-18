@@ -20,35 +20,62 @@ package org.kryptonmc.krypton.command.commands
 
 import com.mojang.brigadier.CommandDispatcher
 import com.mojang.brigadier.arguments.StringArgumentType
+import com.mojang.brigadier.arguments.StringArgumentType.string
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
 import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
+import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.Component.translatable
 import org.kryptonmc.api.command.Sender
 import org.kryptonmc.api.world.Gamemode
 import org.kryptonmc.krypton.KryptonServer
 import org.kryptonmc.krypton.command.InternalCommand
+import org.kryptonmc.krypton.command.SuggestionProviders
+import org.kryptonmc.krypton.command.arguments.EntityArgument
+import org.kryptonmc.krypton.command.arguments.entityArgument
+import org.kryptonmc.krypton.entity.KryptonEntity
 import org.kryptonmc.krypton.entity.player.KryptonPlayer
 import org.kryptonmc.krypton.packet.out.play.PacketOutPlayerInfo
 import org.kryptonmc.krypton.packet.out.play.PacketOutPlayerInfo.PlayerAction.UPDATE_GAMEMODE
 import org.kryptonmc.krypton.util.argument
 
-class GamemodeCommand(private val server: KryptonServer) : InternalCommand {
+internal class GamemodeCommand(private val server: KryptonServer) : InternalCommand {
 
     override fun register(dispatcher: CommandDispatcher<Sender>) {
-        val node = literal<Sender>("gamemode")
-        Gamemode.values().forEach { mode ->
-            node.then(argument<Sender, String>(mode.name.lowercase(), StringArgumentType.string())
-                .executes {
-                    updateGameMode(it.source as? KryptonPlayer ?: return@executes 1, Gamemode.valueOf(it.argument<String>(mode.name.lowercase()).uppercase()))
-                    1
-                })
-        }
-        dispatcher.register(node)
+        StringArgumentType.string()
+        dispatcher.register(
+            literal<Sender>("gamemode")
+                .then(argument<Sender, String>("gamemode", string())
+                    .suggests(SuggestionProviders.GAMEMODES)
+                    .executes {
+                        val sender = it.source as? KryptonPlayer ?: return@executes 1
+                        val gamemode = Gamemode.fromName(it.argument<String>("gamemode")) ?: return@executes 1
+                        updateGameMode(sender, gamemode)
+                        1
+                    }
+                    .then(argument<Sender, KryptonEntity>("player", EntityArgument.singlePlayer(server))
+                        .suggests(SuggestionProviders.PLAYERS(server))
+                        .executes {
+                            val sender = it.source as? KryptonPlayer ?: return@executes 1
+                            val player = it.entityArgument("player") as KryptonPlayer ?: return@executes 1
+                            val gamemode = Gamemode.fromName(it.argument<String>("gamemode")) ?: return@executes 1
+                            updateGameMode(player, gamemode, sender)
+                            1
+                        })
+                )
+        )
     }
 
-    private fun updateGameMode(player: KryptonPlayer, mode: Gamemode) {
+    private fun updateGameMode(player: KryptonPlayer, mode: Gamemode, sender: Sender = player) {
         player.gamemode = mode
         server.playerManager.sendToAll(PacketOutPlayerInfo(UPDATE_GAMEMODE, player))
-        player.sendMessage(translatable("commands.gamemode.success.self", listOf(translatable("gameMode.${mode.name.lowercase()}"))))
+        sender.sendMessage(
+            if (player != sender) translatable(
+                "commands.gamemode.success.other",
+                listOf(text(player.name), translatable("gameMode.${mode.name.lowercase()}"))
+            ) else translatable(
+                "commands.gamemode.success.self",
+                listOf(translatable("gameMode.${mode.name.lowercase()}"))
+            )
+        )
     }
 }
