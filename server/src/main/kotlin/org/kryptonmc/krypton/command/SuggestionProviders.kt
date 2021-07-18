@@ -28,6 +28,8 @@ import org.kryptonmc.api.registry.Registries
 import org.kryptonmc.api.world.Gamemode
 import org.kryptonmc.krypton.KryptonServer
 import org.kryptonmc.krypton.adventure.toMessage
+import org.kryptonmc.krypton.command.arguments.entities.EntityArgument
+import org.kryptonmc.krypton.command.arguments.entities.EntityArguments
 
 // TODO: Use this later
 object SuggestionProviders {
@@ -42,12 +44,24 @@ object SuggestionProviders {
             translatable("entity.${key.namespace()}.${key.value().replace("/", ".")}").toMessage()
         }
     }
+    val UUID = register(key("uuid")) { _, builder ->
+        builder.suggest(listOf("uuids"))
+    }
     val GAMEMODES = register(key("gamemodes")) { _, builder ->
         builder.suggest(Gamemode.values().map { it.name.lowercase() })
     }
-    val PLAYERS: (KryptonServer) -> SuggestionProvider<Sender> = { server ->
+    val ENTITIES: (KryptonServer, EntityArgument.EntityType) -> SuggestionProvider<Sender> = { server, type ->
         register(key("players")) { _, builder ->
-            builder.suggest(server.players.map { it.name })
+            when (type) {
+                EntityArgument.EntityType.ENTITY -> {
+                    val validArguments = EntityArguments.SELECTOR_ALL + server.players.map { it.name }
+                    builder.suggest(validArguments)
+                }
+                EntityArgument.EntityType.PLAYER -> {
+                    val validArguments = EntityArguments.SELECTOR_PLAYERS + server.players.map { it.name }
+                    builder.suggest(validArguments)
+                }
+            }
         }
     }
 

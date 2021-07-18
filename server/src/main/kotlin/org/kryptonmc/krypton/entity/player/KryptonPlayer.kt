@@ -62,47 +62,24 @@ import org.kryptonmc.krypton.entity.attribute.Attributes
 import org.kryptonmc.krypton.entity.metadata.MetadataKeys
 import org.kryptonmc.krypton.inventory.KryptonPlayerInventory
 import org.kryptonmc.krypton.item.handler
-import org.kryptonmc.krypton.packet.out.play.GameState
-import org.kryptonmc.krypton.packet.out.play.PacketOutAbilities
-import org.kryptonmc.krypton.packet.out.play.PacketOutActionBar
-import org.kryptonmc.krypton.packet.out.play.PacketOutCamera
-import org.kryptonmc.krypton.packet.out.play.PacketOutChangeGameState
-import org.kryptonmc.krypton.packet.out.play.PacketOutChat
-import org.kryptonmc.krypton.packet.out.play.PacketOutChunkData
-import org.kryptonmc.krypton.packet.out.play.PacketOutClearTitles
-import org.kryptonmc.krypton.packet.out.play.PacketOutMetadata
-import org.kryptonmc.krypton.packet.out.play.PacketOutEntityPosition
-import org.kryptonmc.krypton.packet.out.play.PacketOutEntityTeleport
-import org.kryptonmc.krypton.packet.out.play.PacketOutNamedSoundEffect
-import org.kryptonmc.krypton.packet.out.play.PacketOutOpenBook
-import org.kryptonmc.krypton.packet.out.play.PacketOutParticle
-import org.kryptonmc.krypton.packet.out.play.PacketOutPlayerListHeaderFooter
-import org.kryptonmc.krypton.packet.out.play.PacketOutPluginMessage
-import org.kryptonmc.krypton.packet.out.play.PacketOutSetSlot
-import org.kryptonmc.krypton.packet.out.play.PacketOutSoundEffect
-import org.kryptonmc.krypton.packet.out.play.PacketOutStopSound
-import org.kryptonmc.krypton.packet.out.play.PacketOutSubTitle
-import org.kryptonmc.krypton.packet.out.play.PacketOutTitle
-import org.kryptonmc.krypton.packet.out.play.PacketOutTitleTimes
-import org.kryptonmc.krypton.packet.out.play.PacketOutUnloadChunk
-import org.kryptonmc.krypton.packet.out.play.PacketOutUpdateLight
-import org.kryptonmc.krypton.packet.out.play.PacketOutUpdateViewPosition
+import org.kryptonmc.krypton.item.toItemStack
 import org.kryptonmc.krypton.network.Session
+import org.kryptonmc.krypton.packet.out.play.*
 import org.kryptonmc.krypton.util.calculatePositionChange
 import org.kryptonmc.krypton.util.chunkInSpiral
 import org.kryptonmc.krypton.util.logger
 import org.kryptonmc.krypton.util.nbt.NBTOps
 import org.kryptonmc.krypton.util.toArea
-import org.kryptonmc.krypton.item.toItemStack
 import org.kryptonmc.krypton.world.KryptonWorld
 import org.kryptonmc.krypton.world.bossbar.BossBarManager
 import org.kryptonmc.krypton.world.chunk.ChunkPosition
 import org.spongepowered.math.vector.Vector3i
 import java.net.InetSocketAddress
-import java.util.Locale
+import java.util.*
 import java.util.function.UnaryOperator
 import kotlin.math.abs
 import kotlin.math.min
+import kotlin.math.sqrt
 
 class KryptonPlayer(
     val session: Session,
@@ -381,12 +358,24 @@ class KryptonPlayer(
         }
     }
 
-    override fun hasCorrectTool(block: Block): Boolean = !block.requiresCorrectTool || inventory.mainHand.type.handler.isCorrectTool(block)
+    override fun hasCorrectTool(block: Block): Boolean =
+        !block.requiresCorrectTool || inventory.mainHand.type.handler.isCorrectTool(block)
 
     override fun getDestroySpeed(block: Block): Float {
         var speed = inventory.mainHand.getDestroySpeed(block)
         if (!isOnGround) speed /= 5F
         return speed
+    }
+
+    fun getDistance(entity: KryptonEntity): Double {
+        val e1 = location
+        val e2 = entity.location
+
+        val x = (e2.x - e1.x) * (e2.x - e1.x)
+        val y = (e2.y - e1.y) * (e2.y - e1.y)
+        val z = (e2.z - e1.z) * (e2.z - e1.z)
+
+        return sqrt(x + y + z)
     }
 
     private fun onAbilitiesUpdate() {
