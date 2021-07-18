@@ -3,6 +3,7 @@ package org.kryptonmc.krypton.command.arguments.entities
 import com.mojang.brigadier.StringReader
 import net.kyori.adventure.key.Key.key
 import org.kryptonmc.api.registry.Registries
+import org.kryptonmc.api.world.Gamemode
 import org.kryptonmc.krypton.entity.KryptonEntity
 import org.kryptonmc.krypton.entity.player.KryptonPlayer
 import org.kryptonmc.krypton.util.toIntRange
@@ -110,10 +111,12 @@ class EntityQuery(val reader: StringReader, val type: Operation) {
                     TODO()
                 }
                 "level" -> {
-
+                    TODO()
                 }
                 "gamemode" -> {
-
+                    entities = entities.filter {
+                        it is KryptonPlayer && it.gamemode == Gamemode.fromName(arg.value)
+                    }
                 }
                 "name" -> {
                     entities = entities.filter {
@@ -121,10 +124,10 @@ class EntityQuery(val reader: StringReader, val type: Operation) {
                     }
                 }
                 "x_rotation" -> {
-
+                    TODO()
                 }
                 "y_rotation" -> {
-
+                    TODO()
                 }
                 "type" -> {
                     entities = entities.filter {
@@ -132,16 +135,16 @@ class EntityQuery(val reader: StringReader, val type: Operation) {
                     }
                 }
                 "nbt" -> {
-
+                    TODO()
                 }
                 "advancements" -> {
-
+                    TODO()
                 }
                 "predicate" -> {
-
+                    TODO()
                 }
                 "sort" -> {
-
+                    TODO()
                 }
                 "limit" -> {
                     val limit = arg.value.toInt()

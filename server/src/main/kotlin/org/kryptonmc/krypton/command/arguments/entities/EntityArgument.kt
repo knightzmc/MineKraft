@@ -3,9 +3,15 @@ package org.kryptonmc.krypton.command.arguments.entities
 import com.mojang.brigadier.StringReader
 import com.mojang.brigadier.arguments.ArgumentType
 import com.mojang.brigadier.context.CommandContext
+import com.mojang.brigadier.suggestion.Suggestions
+import com.mojang.brigadier.suggestion.SuggestionsBuilder
+import net.kyori.adventure.text.Component.text
 import org.kryptonmc.api.command.Sender
+import org.kryptonmc.api.entity.player.Player
 import org.kryptonmc.krypton.KryptonServer
+import org.kryptonmc.krypton.command.suggest
 import org.kryptonmc.krypton.util.argument
+import java.util.concurrent.CompletableFuture
 
 
 class EntityArgument private constructor(val type: EntityType, val server: KryptonServer) :
@@ -26,6 +32,21 @@ class EntityArgument private constructor(val type: EntityType, val server: Krypt
             if (input.matches(PLAYER_NAME_REGEX)) return entity
         }
         return EntityQuery(reader, EntityQuery.Operation.UNKNOWN)
+    }
+
+    override fun <S> listSuggestions(
+        context: CommandContext<S>,
+        builder: SuggestionsBuilder
+    ): CompletableFuture<Suggestions> {
+        if (context.source !is Player)
+            (context.source as Player).sendMessage(text("${builder.remaining} | ${builder.input}"))
+        val selector = if (type == EntityType.PLAYER) EntityArguments.SELECTOR_PLAYERS else EntityArguments.SELECTOR_ALL
+        if (builder.input == "@") {
+            return builder.suggest(selector)
+        } else if (builder.input.startsWith("@") && selector.contains(builder.input.replace("@", ""))) {
+            return builder.suggest(listOf("["))
+        }
+        return Suggestions.empty()
     }
 
     override fun getExamples() = EXAMPLES
