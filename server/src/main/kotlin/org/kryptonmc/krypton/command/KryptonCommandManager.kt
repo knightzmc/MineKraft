@@ -156,6 +156,7 @@ class KryptonCommandManager(private val server: KryptonServer) : CommandManager 
         ListCommand().register(dispatcher)
         SeedCommand().register(dispatcher)
         SayCommand().register(dispatcher)
+        MeCommand().register(dispatcher)
     }
 
     companion object {
