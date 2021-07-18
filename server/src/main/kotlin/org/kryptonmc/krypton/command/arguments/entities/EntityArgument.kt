@@ -15,15 +15,17 @@ class EntityArgument private constructor(val type: EntityType, val server: Krypt
         val startCursor = reader.cursor
         if (reader.canRead() && reader.peek() == '@') {
             reader.skip()
-            return EntityArgumentParser.parse(reader, type, reader.read(), server)
+            return EntityArgumentParser.parse(reader, reader.read())
         } else {
             val input = reader.readString()
-            if (input.matches(PLAYER_NAME_REGEX)) return EntityQuery(
-                listOf(server.player(input)!!),
+            val entity = EntityQuery(
+                reader,
                 EntityQuery.Operation.PLAYER
             )
+            entity.isPlayer = true to input
+            if (input.matches(PLAYER_NAME_REGEX)) return entity
         }
-        return EntityQuery(listOf(), EntityQuery.Operation.UNKNOWN)
+        return EntityQuery(reader, EntityQuery.Operation.UNKNOWN)
     }
 
     override fun getExamples() = EXAMPLES

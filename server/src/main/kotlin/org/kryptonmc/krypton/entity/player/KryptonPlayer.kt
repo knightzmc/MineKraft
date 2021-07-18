@@ -79,7 +79,6 @@ import java.util.*
 import java.util.function.UnaryOperator
 import kotlin.math.abs
 import kotlin.math.min
-import kotlin.math.sqrt
 
 class KryptonPlayer(
     val session: Session,
@@ -365,17 +364,6 @@ class KryptonPlayer(
         var speed = inventory.mainHand.getDestroySpeed(block)
         if (!isOnGround) speed /= 5F
         return speed
-    }
-
-    fun getDistance(entity: KryptonEntity): Double {
-        val e1 = location
-        val e2 = entity.location
-
-        val x = (e2.x - e1.x) * (e2.x - e1.x)
-        val y = (e2.y - e1.y) * (e2.y - e1.y)
-        val z = (e2.z - e1.z) * (e2.z - e1.z)
-
-        return sqrt(x + y + z)
     }
 
     private fun onAbilitiesUpdate() {

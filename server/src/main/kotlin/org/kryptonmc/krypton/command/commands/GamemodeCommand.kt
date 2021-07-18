@@ -55,7 +55,7 @@ internal class GamemodeCommand(private val server: KryptonServer) : InternalComm
                             .suggests(SuggestionProviders.ENTITIES(server, EntityArgument.EntityType.PLAYER))
                             .executes {
                                 val sender = it.source as? KryptonPlayer ?: return@executes 1
-                                val (entities, operation) = it.entityArgument("target").fillPlayer(sender)
+                                val (entities, operation) = it.entityArgument("target").parse(sender)
                                 if (operation == EntityQuery.Operation.UNKNOWN) return@executes 1
 
                                 sender.sendMessage(text(entities.map { it.name }
