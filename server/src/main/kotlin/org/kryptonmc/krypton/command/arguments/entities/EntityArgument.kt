@@ -7,23 +7,23 @@ import org.kryptonmc.api.command.Sender
 import org.kryptonmc.krypton.util.argument
 
 
-class EntityArgument private constructor(val type: EntityType, val single: Boolean) :
-    ArgumentType<EntityQuery> {
+class EntityArgument private constructor(val type: EntityType, val single: Boolean) : ArgumentType<EntityQuery> {
 
-    override fun parse(reader: StringReader): EntityQuery {
-        if (reader.canRead() && reader.peek() == '@') {
-            reader.skip()
-            return EntityArgumentParser.parse(reader, reader.read())
+    override fun parse(reader: StringReader) = if (reader.canRead() && reader.peek() == '@') {
+        reader.skip()
+        EntityArgumentParser.parse(reader, reader.read())
+    } else {
+        val input = reader.readString()
+        val entity = EntityQuery(
+            reader,
+            EntityQuery.Operation.PLAYER
+        )
+        entity.isPlayer = true to input
+        if (input.matches(PLAYER_NAME_REGEX)) {
+            entity
         } else {
-            val input = reader.readString()
-            val entity = EntityQuery(
-                reader,
-                EntityQuery.Operation.PLAYER
-            )
-            entity.isPlayer = true to input
-            if (input.matches(PLAYER_NAME_REGEX)) return entity
+            EntityQuery(reader, EntityQuery.Operation.UNKNOWN)
         }
-        return EntityQuery(reader, EntityQuery.Operation.UNKNOWN)
     }
 
     override fun getExamples() = EXAMPLES
