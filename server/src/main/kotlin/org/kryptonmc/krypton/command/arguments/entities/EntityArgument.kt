@@ -38,8 +38,8 @@ class EntityArgument private constructor(val type: EntityType, val server: Krypt
         context: CommandContext<S>,
         builder: SuggestionsBuilder
     ): CompletableFuture<Suggestions> {
-        if (context.source !is Player)
-            (context.source as Player).sendMessage(text("${builder.remaining} | ${builder.input}"))
+        if (context.source !is Player) return Suggestions.empty()
+        (context.source as Player).sendMessage(text("${builder.remaining} | ${builder.input}"))
         val selector = if (type == EntityType.PLAYER) EntityArguments.SELECTOR_PLAYERS else EntityArguments.SELECTOR_ALL
         if (builder.input == "@") {
             return builder.suggest(selector)
@@ -67,7 +67,8 @@ class EntityArgument private constructor(val type: EntityType, val server: Krypt
 
     enum class EntityType {
         ENTITY,
-        PLAYER
+        PLAYER,
+        ONLY_PLAYER
     }
 
     data class EntityArg(val name: String, val value: String, val not: Boolean)
