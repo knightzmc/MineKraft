@@ -64,7 +64,31 @@ import org.kryptonmc.krypton.inventory.KryptonPlayerInventory
 import org.kryptonmc.krypton.item.handler
 import org.kryptonmc.krypton.item.toItemStack
 import org.kryptonmc.krypton.network.Session
-import org.kryptonmc.krypton.packet.out.play.*
+import org.kryptonmc.krypton.packet.out.play.GameState
+import org.kryptonmc.krypton.packet.out.play.PacketOutAbilities
+import org.kryptonmc.krypton.packet.out.play.PacketOutActionBar
+import org.kryptonmc.krypton.packet.out.play.PacketOutCamera
+import org.kryptonmc.krypton.packet.out.play.PacketOutChangeGameState
+import org.kryptonmc.krypton.packet.out.play.PacketOutChat
+import org.kryptonmc.krypton.packet.out.play.PacketOutChunkData
+import org.kryptonmc.krypton.packet.out.play.PacketOutClearTitles
+import org.kryptonmc.krypton.packet.out.play.PacketOutEntityPosition
+import org.kryptonmc.krypton.packet.out.play.PacketOutEntityTeleport
+import org.kryptonmc.krypton.packet.out.play.PacketOutMetadata
+import org.kryptonmc.krypton.packet.out.play.PacketOutNamedSoundEffect
+import org.kryptonmc.krypton.packet.out.play.PacketOutOpenBook
+import org.kryptonmc.krypton.packet.out.play.PacketOutParticle
+import org.kryptonmc.krypton.packet.out.play.PacketOutPlayerListHeaderFooter
+import org.kryptonmc.krypton.packet.out.play.PacketOutPluginMessage
+import org.kryptonmc.krypton.packet.out.play.PacketOutSetSlot
+import org.kryptonmc.krypton.packet.out.play.PacketOutSoundEffect
+import org.kryptonmc.krypton.packet.out.play.PacketOutStopSound
+import org.kryptonmc.krypton.packet.out.play.PacketOutSubTitle
+import org.kryptonmc.krypton.packet.out.play.PacketOutTitle
+import org.kryptonmc.krypton.packet.out.play.PacketOutTitleTimes
+import org.kryptonmc.krypton.packet.out.play.PacketOutUnloadChunk
+import org.kryptonmc.krypton.packet.out.play.PacketOutUpdateLight
+import org.kryptonmc.krypton.packet.out.play.PacketOutUpdateViewPosition
 import org.kryptonmc.krypton.util.calculatePositionChange
 import org.kryptonmc.krypton.util.chunkInSpiral
 import org.kryptonmc.krypton.util.logger
@@ -75,7 +99,7 @@ import org.kryptonmc.krypton.world.bossbar.BossBarManager
 import org.kryptonmc.krypton.world.chunk.ChunkPosition
 import org.spongepowered.math.vector.Vector3i
 import java.net.InetSocketAddress
-import java.util.*
+import java.util.Locale
 import java.util.function.UnaryOperator
 import kotlin.math.abs
 import kotlin.math.min
@@ -219,13 +243,15 @@ class KryptonPlayer(
         if (abs(location.x - oldLocation.x) > 8 || abs(location.y - oldLocation.y) > 8 || abs(location.z - oldLocation.z) > 8) {
             session.sendPacket(PacketOutEntityTeleport(id, location, isOnGround))
         } else {
-            session.sendPacket(PacketOutEntityPosition(
-                id,
-                calculatePositionChange(location.x, oldLocation.x),
-                calculatePositionChange(location.y, oldLocation.y),
-                calculatePositionChange(location.z, oldLocation.z),
-                isOnGround
-            ))
+            session.sendPacket(
+                PacketOutEntityPosition(
+                    id,
+                    calculatePositionChange(location.x, oldLocation.x),
+                    calculatePositionChange(location.y, oldLocation.y),
+                    calculatePositionChange(location.z, oldLocation.z),
+                    isOnGround
+                )
+            )
         }
         updateChunks()
     }

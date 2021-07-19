@@ -30,8 +30,12 @@ import org.kryptonmc.api.space.Position
 import org.kryptonmc.krypton.adventure.toMessage
 import org.kryptonmc.krypton.command.InternalCommand
 import org.kryptonmc.krypton.command.SuggestionProviders
-import org.kryptonmc.krypton.command.arguments.*
+import org.kryptonmc.krypton.command.arguments.NBTCompoundArgument
+import org.kryptonmc.krypton.command.arguments.SummonEntityArgument
+import org.kryptonmc.krypton.command.arguments.VectorArgument
 import org.kryptonmc.krypton.command.arguments.coordinates.Coordinates
+import org.kryptonmc.krypton.command.arguments.entitySummonArgument
+import org.kryptonmc.krypton.command.arguments.vectorArgument
 import org.kryptonmc.krypton.entity.EntityFactory
 import org.kryptonmc.krypton.entity.player.KryptonPlayer
 import org.kryptonmc.krypton.util.argument

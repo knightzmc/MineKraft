@@ -25,7 +25,7 @@ import java.net.InetAddress
 import java.security.AccessController
 import java.security.MessageDigest
 import java.security.PrivilegedAction
-import java.util.*
+import java.util.Optional
 
 // Avoid lookups
 fun String.toInetAddress(): InetAddress = InetAddresses.forString(this)

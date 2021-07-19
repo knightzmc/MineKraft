@@ -25,7 +25,11 @@ import net.kyori.adventure.key.Key
 import net.kyori.adventure.key.Key.key
 import org.kryptonmc.krypton.command.argument.serializer.ArgumentSerializer
 import org.kryptonmc.krypton.command.argument.serializer.EmptyArgumentSerializer
-import org.kryptonmc.krypton.command.argument.serializer.brigadier.*
+import org.kryptonmc.krypton.command.argument.serializer.brigadier.DoubleArgumentSerializer
+import org.kryptonmc.krypton.command.argument.serializer.brigadier.FloatArgumentSerializer
+import org.kryptonmc.krypton.command.argument.serializer.brigadier.IntegerArgumentSerializer
+import org.kryptonmc.krypton.command.argument.serializer.brigadier.LongArgumentSerializer
+import org.kryptonmc.krypton.command.argument.serializer.brigadier.StringArgumentSerializer
 import org.kryptonmc.krypton.command.argument.serializer.minecraft.EntityArgumentSerializer
 import org.kryptonmc.krypton.command.arguments.NBTArgument
 import org.kryptonmc.krypton.command.arguments.NBTCompoundArgument
