@@ -25,7 +25,6 @@ import net.kyori.adventure.text.Component.translatable
 import org.kryptonmc.api.command.Sender
 import org.kryptonmc.api.entity.EntityType
 import org.kryptonmc.api.registry.Registries
-import org.kryptonmc.api.world.Gamemode
 import org.kryptonmc.krypton.KryptonServer
 import org.kryptonmc.krypton.adventure.toMessage
 import org.kryptonmc.krypton.command.arguments.entities.EntityArgument
@@ -47,9 +46,7 @@ object SuggestionProviders {
     val UUID = register(key("uuid")) { _, builder ->
         builder.suggest(listOf("uuids"))
     }
-    val GAMEMODES = register(key("gamemodes")) { _, builder ->
-        builder.suggest(Gamemode.values().map { it.name.lowercase() })
-    }
+    //Will probably deleted
     val ENTITIES: (KryptonServer, EntityArgument.EntityType) -> SuggestionProvider<Sender> = { server, type ->
         register(key("players")) { _, builder ->
             when (type) {
