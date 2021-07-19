@@ -10,7 +10,10 @@ package org.kryptonmc.api.world
 
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.key.Key.key
-import org.kryptonmc.api.world.Gamemode.*
+import org.kryptonmc.api.world.Gamemode.ADVENTURE
+import org.kryptonmc.api.world.Gamemode.CREATIVE
+import org.kryptonmc.api.world.Gamemode.SPECTATOR
+import org.kryptonmc.api.world.Gamemode.SURVIVAL
 
 /**
  * Represents a game mode, those being [SURVIVAL], [CREATIVE], [ADVENTURE]
@@ -51,7 +54,14 @@ enum class Gamemode {
         get() = this == SURVIVAL || this == CREATIVE
 
     val key: Key
-        get() = key("gamemode_${this.name.lowercase()}")
+        get() = key("gamemode.${this.name.lowercase()}")
+    val shortName
+        get() = when (this) {
+            SURVIVAL -> "s"
+            CREATIVE -> "c"
+            ADVENTURE -> "a"
+            SPECTATOR -> "sp"
+        }
 
     override fun toString() = name.lowercase()
 
@@ -70,12 +80,21 @@ enum class Gamemode {
          * Retrieves a game mode from its name.
          */
         @JvmStatic
-        fun fromName(name: String): Gamemode? {
-            return try {
-                valueOf(name.uppercase())
-            } catch (e: IllegalArgumentException) {
-                null
+        fun fromName(name: String) = try {
+            valueOf(name.uppercase())
+        } catch (e: IllegalArgumentException) {
+            null
+        }
+
+        /**
+         * Retrieves a game mode from its short name
+         */
+        @JvmStatic
+        fun fromShortName(shortName: String): Gamemode? {
+            for (value in values()) {
+                if (value.shortName == shortName) return value
             }
+            return null
         }
     }
 }

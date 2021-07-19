@@ -5,7 +5,7 @@ import org.kryptonmc.krypton.command.argument.serializer.ArgumentSerializer
 import org.kryptonmc.krypton.command.arguments.entities.EntityArgument
 
 /**
- * A serializer for [EntityArgument]
+ * A serialiser for [EntityArgument]
  */
 class EntityArgumentSerializer : ArgumentSerializer<EntityArgument> {
 

@@ -3,22 +3,14 @@ package org.kryptonmc.krypton.command.arguments.entities
 import com.mojang.brigadier.StringReader
 import com.mojang.brigadier.arguments.ArgumentType
 import com.mojang.brigadier.context.CommandContext
-import com.mojang.brigadier.suggestion.Suggestions
-import com.mojang.brigadier.suggestion.SuggestionsBuilder
-import net.kyori.adventure.text.Component.text
 import org.kryptonmc.api.command.Sender
-import org.kryptonmc.api.entity.player.Player
-import org.kryptonmc.krypton.KryptonServer
-import org.kryptonmc.krypton.command.suggest
 import org.kryptonmc.krypton.util.argument
-import java.util.concurrent.CompletableFuture
 
 
-class EntityArgument private constructor(val type: EntityType, val server: KryptonServer) :
+class EntityArgument private constructor(val type: EntityType, val single: Boolean) :
     ArgumentType<EntityQuery> {
 
     override fun parse(reader: StringReader): EntityQuery {
-        val startCursor = reader.cursor
         if (reader.canRead() && reader.peek() == '@') {
             reader.skip()
             return EntityArgumentParser.parse(reader, reader.read())
@@ -34,41 +26,29 @@ class EntityArgument private constructor(val type: EntityType, val server: Krypt
         return EntityQuery(reader, EntityQuery.Operation.UNKNOWN)
     }
 
-    override fun <S> listSuggestions(
-        context: CommandContext<S>,
-        builder: SuggestionsBuilder
-    ): CompletableFuture<Suggestions> {
-        if (context.source !is Player) return Suggestions.empty()
-        (context.source as Player).sendMessage(text("${builder.remaining} | ${builder.input}"))
-        val selector = if (type == EntityType.PLAYER) EntityArguments.SELECTOR_PLAYERS else EntityArguments.SELECTOR_ALL
-        if (builder.input == "@") {
-            return builder.suggest(selector)
-        } else if (builder.input.startsWith("@") && selector.contains(builder.input.replace("@", ""))) {
-            return builder.suggest(listOf("["))
-        }
-        return Suggestions.empty()
-    }
-
     override fun getExamples() = EXAMPLES
 
     companion object {
 
-        private val EXAMPLES = listOf("Player1", "Player2")
+        private val EXAMPLES = listOf("Player1", "Player2", "@a", "@e", "@r", "@a[gamemode=adventure]")
         private val PLAYER_NAME_REGEX = Regex("[a-zA-Z0-9_]{1,16}")
 
-        fun singlePlayer(server: KryptonServer): EntityArgument {
-            return EntityArgument(EntityType.PLAYER, server)
-        }
+        /**
+         * @param single Whether only one player can be specified or not
+         * @return An argument which can only accept players
+         */
+        fun singlePlayer(single: Boolean = false) = EntityArgument(EntityType.PLAYER, single)
 
-        fun singleEntity(server: KryptonServer): EntityArgument {
-            return EntityArgument(EntityType.ENTITY, server)
-        }
+        /**
+         * @param single Whether only one entity can be specified or not
+         * @return An argument which can accept all entities
+         */
+        fun singleEntity(single: Boolean = false) = EntityArgument(EntityType.ENTITY, single)
     }
 
     enum class EntityType {
         ENTITY,
-        PLAYER,
-        ONLY_PLAYER
+        PLAYER
     }
 
     data class EntityArg(val name: String, val value: String, val not: Boolean)

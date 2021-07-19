@@ -24,7 +24,7 @@ import org.kryptonmc.krypton.command.argument.serializer.ArgumentSerializer
 import org.kryptonmc.krypton.util.writeVarInt
 
 /**
- * A serializer for Brigadier's [StringArgumentType]
+ * A serialiser for Brigadier's [StringArgumentType]
  */
 class StringArgumentSerializer : ArgumentSerializer<StringArgumentType> {
 

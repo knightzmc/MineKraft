@@ -102,7 +102,7 @@ class EntityQuery(val reader: StringReader, val type: Operation) {
                     TODO()
                 }
                 "scores" -> {
-                    TODO()
+
                 }
                 "tag" -> {
                     TODO()

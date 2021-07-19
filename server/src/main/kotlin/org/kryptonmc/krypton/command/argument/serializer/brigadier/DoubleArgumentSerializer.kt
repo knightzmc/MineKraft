@@ -23,7 +23,7 @@ import io.netty.buffer.ByteBuf
 import org.kryptonmc.krypton.command.argument.serializer.ArgumentSerializer
 
 /**
- * A serializer for Brigadier's [DoubleArgumentType]
+ * A serialiser for Brigadier's [DoubleArgumentType]
  */
 class DoubleArgumentSerializer : ArgumentSerializer<DoubleArgumentType> {
 
