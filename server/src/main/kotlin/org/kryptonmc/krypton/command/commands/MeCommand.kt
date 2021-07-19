@@ -19,7 +19,7 @@ class MeCommand : InternalCommand {
                 .then(argument<Sender, String>("action", string())
                     .executes {
                         val sender = it.source as? KryptonPlayer ?: return@executes 1
-                        sender.sendMessage(
+                        sender.server.broadcast(
                             translatable(
                                 "chat.type.emote",
                                 listOf(text(sender.name), text(it.argument<String>("action")))
