@@ -1,15 +1,12 @@
 package org.kryptonmc.krypton.command.commands
 
 import com.mojang.brigadier.CommandDispatcher
-import com.mojang.brigadier.arguments.StringArgumentType.string
 import com.mojang.brigadier.builder.LiteralArgumentBuilder.literal
-import com.mojang.brigadier.builder.RequiredArgumentBuilder.argument
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.Component.translatable
 import org.kryptonmc.api.command.Sender
 import org.kryptonmc.krypton.KryptonServer
 import org.kryptonmc.krypton.command.InternalCommand
-import org.kryptonmc.krypton.command.SuggestionProviders
 import org.kryptonmc.krypton.entity.player.KryptonPlayer
 
 class ListCommand : InternalCommand {
@@ -22,8 +19,7 @@ class ListCommand : InternalCommand {
                     sendNames(sender, sender.server)
                     1
                 }
-                .then(argument<Sender, String>("uuids", string())
-                    .suggests(SuggestionProviders.UUID)
+                .then(literal<Sender>("uuids")
                     .executes {
                         val sender = it.source as? KryptonPlayer ?: return@executes 1
                         sendNamesWithUUID(sender, sender.server)

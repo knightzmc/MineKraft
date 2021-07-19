@@ -43,9 +43,6 @@ object SuggestionProviders {
             translatable("entity.${key.namespace()}.${key.value().replace("/", ".")}").toMessage()
         }
     }
-    val UUID = register(key("uuid")) { _, builder ->
-        builder.suggest(listOf("uuids"))
-    }
     //Will probably deleted
     val ENTITIES: (KryptonServer, EntityArgument.EntityType) -> SuggestionProvider<Sender> = { server, type ->
         register(key("players")) { _, builder ->
