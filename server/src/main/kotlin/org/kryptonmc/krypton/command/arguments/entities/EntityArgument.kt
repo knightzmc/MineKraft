@@ -37,13 +37,13 @@ class EntityArgument private constructor(val type: EntityType, val single: Boole
          * @param single Whether only one player can be specified or not
          * @return An argument which can only accept players
          */
-        fun singlePlayer(single: Boolean = false) = EntityArgument(EntityType.PLAYER, single)
+        fun player(single: Boolean = false) = EntityArgument(EntityType.PLAYER, single)
 
         /**
          * @param single Whether only one entity can be specified or not
          * @return An argument which can accept all entities
          */
-        fun singleEntity(single: Boolean = false) = EntityArgument(EntityType.ENTITY, single)
+        fun entity(single: Boolean = false) = EntityArgument(EntityType.ENTITY, single)
     }
 
     enum class EntityType {

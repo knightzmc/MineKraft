@@ -48,7 +48,7 @@ internal class GamemodeCommand(private val server: KryptonServer) : InternalComm
                     .executes {
                         gameModeArgument(it, gamemode)
                     }
-                    .then(argument<Sender, EntityQuery>("targets", EntityArgument.singlePlayer())
+                    .then(argument<Sender, EntityQuery>("targets", EntityArgument.player())
                         .executes {
                             targetArgument(it, gamemode)
                         })
@@ -63,7 +63,7 @@ internal class GamemodeCommand(private val server: KryptonServer) : InternalComm
                         ?: return@executes 1
                     gameModeArgument(it, gamemode)
                 }
-                .then(argument<Sender, EntityQuery>("targets", EntityArgument.singlePlayer())
+                .then(argument<Sender, EntityQuery>("targets", EntityArgument.player())
                     .executes {
                         val gamemode = Gamemode.fromShortName(it.argument("gamemode")) ?: Gamemode.fromId(
                             it.argument<String>("gamemode").toIntOrNull() ?: return@executes 1
