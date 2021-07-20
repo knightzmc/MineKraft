@@ -31,7 +31,7 @@ class EntityQuery(private val args: List<EntityArgument.EntityArg>, val type: Op
             // parse args
             var currentNearest = source.server.players[0]
             for (player in source.server.players) {
-                if(player.getDistance(source) < currentNearest.getDistance(source)) currentNearest = player
+                if(player.distance(source) < currentNearest.distance(source)) currentNearest = player
             }
             listOf(currentNearest)
         }
@@ -62,16 +62,16 @@ class EntityQuery(private val args: List<EntityArgument.EntityArg>, val type: Op
                     entities = if (arg.value.startsWith("..")) {
                         val distance = arg.value.replace("..", "").toInt()
                         entities.filter {
-                            it.getDistance(source) <= distance
+                            it.distance(source) <= distance
                         }
                     } else if (!arg.value.contains("..")) {
                         entities.filter {
-                            it.getDistance(source).toInt() == arg.value.toInt()
+                            it.distance(source).toInt() == arg.value.toInt()
                         }
                     } else {
                         val range = arg.value.toIntRange()
                         entities.filter {
-                            it.getDistance(source) >= range.first && it.getDistance(source) <= range.last
+                            it.distance(source) >= range.first && it.distance(source) <= range.last
                         }
                     }
                 }

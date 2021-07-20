@@ -34,6 +34,7 @@ import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.util.TriState
 import org.apache.commons.lang3.StringUtils
+import org.kryptonmc.api.adventure.AdventureMessage
 import org.kryptonmc.api.command.BrigadierCommand
 import org.kryptonmc.api.command.CommandManager
 import org.kryptonmc.api.command.RawCommand
@@ -41,7 +42,6 @@ import org.kryptonmc.api.command.Sender
 import org.kryptonmc.api.command.SimpleCommand
 import org.kryptonmc.api.event.play.PermissionCheckEvent
 import org.kryptonmc.krypton.KryptonServer
-import org.kryptonmc.krypton.adventure.AdventureMessage
 import org.kryptonmc.krypton.command.commands.DebugCommand
 import org.kryptonmc.krypton.command.commands.GamemodeCommand
 import org.kryptonmc.krypton.command.commands.ListCommand

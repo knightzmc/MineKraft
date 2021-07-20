@@ -27,7 +27,6 @@ import net.kyori.adventure.text.Component
 import org.kryptonmc.api.adventure.toMessage
 import org.kryptonmc.api.command.Sender
 import org.kryptonmc.api.registry.Registries
-import org.kryptonmc.krypton.adventure.toMessage
 import org.kryptonmc.krypton.util.argument
 import org.kryptonmc.krypton.util.readKey
 
