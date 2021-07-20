@@ -68,7 +68,14 @@ class EntityQuery(
         SELECTOR.UNKNOWN -> throw UNKNOWN_SELECTOR_EXCEPTION.create("")
     }
 
-    fun getPlayers(source: KryptonPlayer) = getEntities(source).map { it as KryptonPlayer }
+    fun getEntity(source: KryptonPlayer): KryptonEntity = getEntities(source)[0]
+
+    fun getPlayers(source: KryptonPlayer) =
+        getEntities(source).map { if (it !is KryptonPlayer) throw UnsupportedOperationException("You cannot call .getPlayers() if there is an entity in the arguments") else it }
+
+    fun getPlayer(source: KryptonPlayer) =
+        getEntities(source).map { if (it !is KryptonPlayer) throw UnsupportedOperationException("You cannot call .getPlayers() if there is an entity in the arguments") else it }[0]
+
 
     private fun applyArguments(originalEntities: List<KryptonEntity>, source: KryptonPlayer): List<KryptonEntity> {
         var entities = originalEntities
@@ -76,31 +83,31 @@ class EntityQuery(
             when (arg.name) {
                 "x" -> {
                     entities = entities.filter {
-                        it.location.blockX == arg.value.toInt()
+                        it.location.blockX == arg.value.toString().toInt()
                     }
                 }
                 "y" -> {
                     entities = entities.filter {
-                        it.location.blockY == arg.value.toInt()
+                        it.location.blockY == arg.value.toString().toInt()
                     }
                 }
                 "z" -> {
                     entities = entities.filter {
-                        it.location.blockY == arg.value.toInt()
+                        it.location.blockY == arg.value.toString().toInt()
                     }
                 }
                 "distance" -> {
-                    entities = if (arg.value.startsWith("..")) {
-                        val distance = arg.value.replace("..", "").toInt()
+                    entities = if (arg.value.toString().startsWith("..")) {
+                        val distance = arg.value.toString().replace("..", "").toInt()
                         entities.filter {
                             it.distance(source) <= distance
                         }
-                    } else if (!arg.value.contains("..")) {
+                    } else if (!arg.value.toString().contains("..")) {
                         entities.filter {
-                            it.distance(source).toInt() == arg.value.toInt()
+                            it.distance(source).toInt() == arg.value.toString().toInt()
                         }
                     } else {
-                        val range = arg.value.toIntRange()
+                        val range = arg.value.toString().toIntRange()
                         entities.filter {
                             it.distance(source) >= range.first && it.distance(source) <= range.last
                         }
@@ -129,7 +136,7 @@ class EntityQuery(
                 }
                 "gamemode" -> {
                     entities = entities.filter {
-                        it is KryptonPlayer && it.gamemode == Gamemode.fromName(arg.value)
+                        it is KryptonPlayer && it.gamemode == Gamemode.fromName(arg.value.toString())
                     }
                 }
                 "name" -> {
@@ -145,7 +152,7 @@ class EntityQuery(
                 }
                 "type" -> {
                     entities = entities.filter {
-                        it.type == Registries.ENTITY_TYPE[key(arg.value)]
+                        it.type == Registries.ENTITY_TYPE[key(arg.value.toString())]
                     }
                 }
                 "nbt" -> {
@@ -161,7 +168,7 @@ class EntityQuery(
                     TODO()
                 }
                 "limit" -> {
-                    val limit = arg.value.toInt()
+                    val limit = arg.value.toString().toInt()
                     if (limit <= 0) throw LIMIT_NULL.create()
                     entities = if (entities.size > limit) entities.subList(0, limit - 1) else entities
                 }

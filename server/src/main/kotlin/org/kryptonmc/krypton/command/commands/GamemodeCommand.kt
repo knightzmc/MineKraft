@@ -48,7 +48,7 @@ internal class GamemodeCommand(private val server: KryptonServer) : InternalComm
                     .executes {
                         gameModeArgument(it, gamemode)
                     }
-                    .then(argument<Sender, EntityQuery>("targets", EntityArgument.players(server))
+                    .then(argument<Sender, EntityQuery>("targets", EntityArgument.players())
                         .executes {
                             targetArgument(it, gamemode)
                         })
@@ -63,7 +63,7 @@ internal class GamemodeCommand(private val server: KryptonServer) : InternalComm
                         ?: return@executes 1
                     gameModeArgument(it, gamemode)
                 }
-                .then(argument<Sender, EntityQuery>("targets", EntityArgument.players(server))
+                .then(argument<Sender, EntityQuery>("targets", EntityArgument.players())
                     .executes {
                         val gamemode = Gamemode.fromShortName(it.argument("gamemode")) ?: Gamemode.fromId(
                             it.argument<String>("gamemode").toIntOrNull() ?: return@executes 1
@@ -84,9 +84,9 @@ internal class GamemodeCommand(private val server: KryptonServer) : InternalComm
     @Suppress("UNCHECKED_CAST")
     private fun targetArgument(context: CommandContext<Sender>, gamemode: Gamemode): Int {
         val sender = context.source as? KryptonPlayer ?: return 1
-        val entities = context.entityArgument("targets").getEntities(sender)
+        val entities = context.entityArgument("targets").getPlayers(sender)
 
-        updateGameMode(entities as List<KryptonPlayer>, gamemode, sender)
+        updateGameMode(entities, gamemode, sender)
         return 1
     }
 

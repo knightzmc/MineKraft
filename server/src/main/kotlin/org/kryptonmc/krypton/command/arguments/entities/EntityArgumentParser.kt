@@ -19,7 +19,6 @@
 package org.kryptonmc.krypton.command.arguments.entities
 
 import com.mojang.brigadier.StringReader
-import org.kryptonmc.krypton.KryptonServer
 
 object EntityArgumentParser {
 
@@ -29,7 +28,6 @@ object EntityArgumentParser {
         position: Int,
         onlyPlayers: Boolean,
         singleTarget: Boolean,
-        server: KryptonServer
     ) = when (operation) {
         'p' -> {
             EntityQuery(listOf(), EntityQuery.SELECTOR.NEAREST_PLAYER)
@@ -42,7 +40,12 @@ object EntityArgumentParser {
                 reader.cursor = 0
                 throw ONLY_FOR_PLAYERS.createWithContext(reader)
             }
-            EntityQuery(listOf(), EntityQuery.SELECTOR.ALL_ENTITIES)
+            if (reader.canRead() && reader.peek() == '[') {
+                reader.skip()
+                EntityQuery(parseArguments(reader), EntityQuery.SELECTOR.ALL_ENTITIES)
+            } else {
+                EntityQuery(listOf(), EntityQuery.SELECTOR.ALL_ENTITIES)
+            }
         }
         'r' -> {
             EntityQuery(listOf(), EntityQuery.SELECTOR.RANDOM_PLAYER)
@@ -54,7 +57,7 @@ object EntityArgumentParser {
             }
             if (reader.canRead() && reader.peek() == '[') {
                 reader.skip()
-                EntityQuery(parseArguments(reader, server), EntityQuery.SELECTOR.ALL_PLAYERS)
+                EntityQuery(parseArguments(reader), EntityQuery.SELECTOR.ALL_PLAYERS)
             } else {
                 EntityQuery(listOf(), EntityQuery.SELECTOR.ALL_PLAYERS)
             }
@@ -70,7 +73,6 @@ object EntityArgumentParser {
 
     private fun parseArguments(
         reader: StringReader,
-        server: KryptonServer
     ): List<EntityArgument.EntityArg> {
         reader.skipWhitespace()
         val args = mutableListOf<EntityArgument.EntityArg>()

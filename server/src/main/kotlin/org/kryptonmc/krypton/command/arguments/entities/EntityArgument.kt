@@ -27,14 +27,12 @@ import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.Component.translatable
 import org.kryptonmc.api.adventure.toMessage
 import org.kryptonmc.api.command.Sender
-import org.kryptonmc.krypton.KryptonServer
 import org.kryptonmc.krypton.util.argument
 
 
 class EntityArgument private constructor(
     val onlyPlayers: Boolean,
     val singleTarget: Boolean,
-    val server: KryptonServer
 ) :
     ArgumentType<EntityQuery> {
 
@@ -42,7 +40,7 @@ class EntityArgument private constructor(
         reader.skip()
         if (!reader.canRead()) throw MISSING_SELECTOR.createWithContext(reader)
         val position = reader.cursor
-        EntityArgumentParser.parse(reader, reader.read(), position, onlyPlayers, singleTarget, server)
+        EntityArgumentParser.parse(reader, reader.read(), position, onlyPlayers, singleTarget)
     } else {
         val input = reader.readString()
 
@@ -68,26 +66,26 @@ class EntityArgument private constructor(
         /**
          * @return An argument which can only accept one player
          */
-        fun player(server: KryptonServer) = EntityArgument(onlyPlayers = true, singleTarget = true, server = server)
+        fun player() = EntityArgument(onlyPlayers = true, singleTarget = true)
 
         /**
          * @return An argument which can only accept players
          */
-        fun players(server: KryptonServer) = EntityArgument(onlyPlayers = true, singleTarget = false, server = server)
+        fun players() = EntityArgument(onlyPlayers = true, singleTarget = false)
 
 
         /**
          * @return An argument which can accept one entity
          */
-        fun entity(server: KryptonServer) = EntityArgument(onlyPlayers = false, singleTarget = true, server = server)
+        fun entity() = EntityArgument(onlyPlayers = false, singleTarget = true)
 
         /**
          * @return An argument which can accept entities
          */
-        fun entities(server: KryptonServer) = EntityArgument(onlyPlayers = false, singleTarget = false, server = server)
+        fun entities() = EntityArgument(onlyPlayers = false, singleTarget = false)
     }
 
-    data class EntityArg(val name: String, val value: String, val not: Boolean)
+    data class EntityArg(val name: String, val value: Any, val not: Boolean)
 
 }
 
