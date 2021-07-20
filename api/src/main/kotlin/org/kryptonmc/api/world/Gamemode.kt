@@ -18,6 +18,7 @@ import org.kryptonmc.api.world.Gamemode.SURVIVAL
 /**
  * Represents a game mode, those being [SURVIVAL], [CREATIVE], [ADVENTURE]
  * and [SPECTATOR].
+ * @param shortName Represents the short name of the given gamemode
  */
 @Suppress("MemberVisibilityCanBePrivate")
 enum class Gamemode(val shortName: String) {
@@ -78,7 +79,7 @@ enum class Gamemode(val shortName: String) {
         @JvmStatic
         fun fromName(name: String) = try {
             valueOf(name.uppercase())
-        } catch (e: IllegalArgumentException) {
+        } catch (_: IllegalArgumentException) {
             null
         }
 
