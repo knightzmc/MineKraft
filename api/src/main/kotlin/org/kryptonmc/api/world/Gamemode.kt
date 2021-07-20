@@ -53,8 +53,17 @@ enum class Gamemode {
     val canBuild: Boolean
         get() = this == SURVIVAL || this == CREATIVE
 
+
+    /**
+     *  Represents the key of the gamemode
+     */
     val key: Key
-        get() = key("gamemode.${this.name.lowercase()}")
+        get() = key("gameMode.${this.name.lowercase()}")
+
+    /**
+     * Represents the short name of the given gamemode
+     * The short name is used in [GamemodeCommand]
+     */
     val shortName
         get() = when (this) {
             SURVIVAL -> "s"
@@ -90,11 +99,6 @@ enum class Gamemode {
          * Retrieves a game mode from its short name
          */
         @JvmStatic
-        fun fromShortName(shortName: String): Gamemode? {
-            for (value in values()) {
-                if (value.shortName == shortName) return value
-            }
-            return null
-        }
+        fun fromShortName(shortName: String) = values().firstOrNull { it.shortName == shortName }
     }
 }

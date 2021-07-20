@@ -56,6 +56,7 @@ import java.util.Optional
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.UnaryOperator
 import kotlin.math.abs
+import kotlin.math.pow
 import kotlin.math.sqrt
 import kotlin.random.Random
 
@@ -192,13 +193,12 @@ abstract class KryptonEntity(
     override fun asHoverEvent(op: UnaryOperator<ShowEntity>) =
         showEntity(ShowEntity.of(type.key, uuid, displayName.takeIf { it !== Component.empty() }))
 
-    open fun getDistance(entity: KryptonEntity): Double {
+    fun distance(entity: KryptonEntity): Double {
         val e1 = location
         val e2 = entity.location
-
-        val x = (e2.x - e1.x) * (e2.x - e1.x)
-        val y = (e2.y - e1.y) * (e2.y - e1.y)
-        val z = (e2.z - e1.z) * (e2.z - e1.z)
+        val x = (e2.x - e1.x).pow(2)
+        val y = (e2.y - e1.y).pow(2)
+        val z = (e2.z - e1.z).pow(2)
 
         return sqrt(x + y + z)
     }
