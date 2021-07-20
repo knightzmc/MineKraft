@@ -97,11 +97,11 @@ internal class GamemodeCommand(private val server: KryptonServer) : InternalComm
             entity.gamemode = mode
             server.playerManager.sendToAll(PacketOutPlayerInfo(UPDATE_GAMEMODE, entity))
             sender.sendMessage(
-                if (sender == sender) translatable(
-                    "commands.gamemode.success.other",
-                    listOf(text(entities[0].name), translatable("gameMode.${mode.name.lowercase()}"))
+                if (sender != entity) translatable(
+                    "gameMode.changed",
+                    listOf(translatable("gameMode.${mode.name.lowercase()}"))
                 ) else translatable(
-                    "commands.gamemode.success.self",
+                    "commands.gamemode.success.other",
                     listOf(text(entity.name), translatable("gameMode.${mode.name.lowercase()}"))
                 )
             )
