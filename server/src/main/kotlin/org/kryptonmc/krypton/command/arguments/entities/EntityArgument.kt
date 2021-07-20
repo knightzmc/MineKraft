@@ -14,15 +14,15 @@ class EntityArgument private constructor(val type: EntityType, val single: Boole
         EntityArgumentParser.parse(reader, reader.read())
     } else {
         val input = reader.readString()
-        val entity = EntityQuery(
-            reader,
-            EntityQuery.Operation.PLAYER
-        )
-        entity.isPlayer = true to input
+
         if (input.matches(PLAYER_NAME_REGEX)) {
-            entity
+            EntityQuery(
+                playerName = input,
+                type = EntityQuery.Operation.PLAYER,
+                args = listOf()
+            )
         } else {
-            EntityQuery(reader, EntityQuery.Operation.UNKNOWN)
+            EntityQuery(args = listOf(), EntityQuery.Operation.UNKNOWN)
         }
     }
 

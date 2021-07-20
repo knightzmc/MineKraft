@@ -84,8 +84,7 @@ internal class GamemodeCommand(private val server: KryptonServer) : InternalComm
     @Suppress("UNCHECKED_CAST")
     private fun targetArgument(context: CommandContext<Sender>, gamemode: Gamemode): Int {
         val sender = context.source as? KryptonPlayer ?: return 1
-        val (entities, operation) = context.entityArgument("targets").parse(sender)
-        if (operation == EntityQuery.Operation.UNKNOWN) return 1
+        val entities = context.entityArgument("targets").getEntities(sender)
         sender.sendMessage(text(entities.map { it.name }
             .toString())) //To see if all entities are getting parsed
 

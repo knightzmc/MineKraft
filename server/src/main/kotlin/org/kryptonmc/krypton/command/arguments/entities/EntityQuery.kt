@@ -11,53 +11,36 @@ import org.kryptonmc.krypton.util.toIntRange
 /**
  * Documentation [TODO]
  */
-class EntityQuery(val reader: StringReader, val type: Operation) {
+class EntityQuery(private val args: List<EntityArgument.EntityArg>, val type: Operation, private val playerName: String = "") {
 
-    internal var isPlayer = Pair(false, "")
-
-    fun parse(
-        player: KryptonPlayer,
-    ): EntityResult {
-        if (isPlayer.first) return EntityResult(listOf(player.server.player(isPlayer.second)!!), type)
-        reader.skipWhitespace()
-        val args = mutableListOf<EntityArgument.EntityArg>()
-        while (reader.canRead() && reader.peek() != ']') {
-            reader.skipWhitespace()
-            reader.skip()
-            var not = false
-            val option = buildString {
-                while (reader.canRead() && reader.peek() != '=') {
-                    val c = reader.read()
-                    append(c)
-                    reader.skipWhitespace()
-                }
-            }
-            reader.skipWhitespace()
-            val value = buildString {
-                if (reader.canRead() && reader.peek() == '=') {
-                    reader.skip()
-                    reader.skipWhitespace()
-                    if (reader.peek() == '!') {
-                        not = true
-                        reader.skip()
-                        reader.skipWhitespace()
-                    }
-                    while (reader.canRead() && reader.peek() != ',' && reader.peek() != ']') {
-                        append(reader.read())
-                        reader.skipWhitespace()
-                    }
-                }
-                reader.skipWhitespace()
-            }
-            if (option in EntityArguments.ARGUMENTS) {
-                args += EntityArgument.EntityArg(option, value, not)
-            }
+    fun getEntities(source: KryptonPlayer)= when(type) {
+        Operation.RANDOM_PLAYER -> {
+            //parse args
+            listOf(source.server.players.random())
         }
-        return EntityResult(applyArguments(args, player), type)
+        Operation.ALL_PLAYERS -> {
+            //parse args
+            source.server.players
+        }
+        Operation.EXECUTOR -> listOf(source)
+        Operation.ALL_ENTITIES -> {
+            // parse args
+            (source.server.players + source.world.entities).toList()
+        }
+        Operation.NEAREST_PLAYER -> {
+            // parse args
+            var currentNearest = source.server.players[0]
+            for (player in source.server.players) {
+                if(player.getDistance(source) < currentNearest.getDistance(source)) currentNearest = player
+            }
+            listOf(currentNearest)
+        }
+        Operation.PLAYER -> listOf(source.server.player(playerName)!!)
+        Operation.UNKNOWN -> listOf()
     }
 
-    private fun applyArguments(args: List<EntityArgument.EntityArg>, player: KryptonPlayer): List<KryptonEntity> {
-        var entities = (player.world.entities + player.server.players).toList()
+    private fun applyArguments(source: KryptonPlayer): List<KryptonEntity> {
+        var entities = (source.world.entities + source.server.players).toList()
         for (arg in args) {
             when (arg.name) {
                 "x" -> {
@@ -79,16 +62,16 @@ class EntityQuery(val reader: StringReader, val type: Operation) {
                     entities = if (arg.value.startsWith("..")) {
                         val distance = arg.value.replace("..", "").toInt()
                         entities.filter {
-                            it.getDistance(player) <= distance
+                            it.getDistance(source) <= distance
                         }
                     } else if (!arg.value.contains("..")) {
                         entities.filter {
-                            it.getDistance(player).toInt() == arg.value.toInt()
+                            it.getDistance(source).toInt() == arg.value.toInt()
                         }
                     } else {
                         val range = arg.value.toIntRange()
                         entities.filter {
-                            it.getDistance(player) >= range.first && it.getDistance(player) <= range.last
+                            it.getDistance(source) >= range.first && it.getDistance(source) <= range.last
                         }
                     }
                 }

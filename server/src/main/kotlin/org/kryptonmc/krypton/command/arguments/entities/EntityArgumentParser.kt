@@ -1,6 +1,7 @@
 package org.kryptonmc.krypton.command.arguments.entities
 
 import com.mojang.brigadier.StringReader
+import org.kryptonmc.krypton.entity.player.KryptonPlayer
 
 object EntityArgumentParser {
 
@@ -9,21 +10,65 @@ object EntityArgumentParser {
         operation: Char,
     ) = when (operation) {
         'p' -> {
-            EntityQuery(reader, EntityQuery.Operation.NEAREST_PLAYER)
+            EntityQuery(listOf(), EntityQuery.Operation.NEAREST_PLAYER)
         }
         'e' -> {
-            EntityQuery(reader, EntityQuery.Operation.ALL_ENTITIES)
+            EntityQuery(listOf(), EntityQuery.Operation.ALL_ENTITIES)
         }
         'r' -> {
-            EntityQuery(reader, EntityQuery.Operation.RANDOM_PLAYER)
+            EntityQuery(listOf(), EntityQuery.Operation.RANDOM_PLAYER)
         }
         'a' -> {
-            EntityQuery(reader, EntityQuery.Operation.ALL_PLAYERS)
+            if(reader.canRead() && reader.peek() == '[') {
+                EntityQuery(parseArguments(reader), EntityQuery.Operation.ALL_PLAYERS)
+            } else {
+                EntityQuery(listOf(), EntityQuery.Operation.ALL_PLAYERS)
+            }
         }
         's' -> {
-            EntityQuery(reader, EntityQuery.Operation.EXECUTOR)
+            EntityQuery(listOf(), EntityQuery.Operation.EXECUTOR)
         }
-        else -> EntityQuery(reader, EntityQuery.Operation.UNKNOWN)
+        else -> EntityQuery(listOf(), EntityQuery.Operation.UNKNOWN)
+    }
+
+    private fun parseArguments(
+        reader: StringReader
+    ): List<EntityArgument.EntityArg> {
+        reader.skipWhitespace()
+        val args = mutableListOf<EntityArgument.EntityArg>()
+        while (reader.canRead() && reader.peek() != ']') {
+            reader.skipWhitespace()
+            reader.skip()
+            var not = false
+            val option = buildString {
+                while (reader.canRead() && reader.peek() != '=') {
+                    val c = reader.read()
+                    append(c)
+                    reader.skipWhitespace()
+                }
+            }
+            reader.skipWhitespace()
+            val value = buildString {
+                if (reader.canRead() && reader.peek() == '=') {
+                    reader.skip()
+                    reader.skipWhitespace()
+                    if (reader.peek() == '!') {
+                        not = true
+                        reader.skip()
+                        reader.skipWhitespace()
+                    }
+                    while (reader.canRead() && reader.peek() != ',' && reader.peek() != ']') {
+                        append(reader.read())
+                        reader.skipWhitespace()
+                    }
+                }
+                reader.skipWhitespace()
+            }
+            if (option in EntityArguments.ARGUMENTS) {
+                args += EntityArgument.EntityArg(option, value, not)
+            }
+        }
+        return args.toList()
     }
 
 
