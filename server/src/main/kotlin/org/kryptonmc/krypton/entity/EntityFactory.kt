@@ -36,6 +36,9 @@ object EntityFactory {
         EntityTypes.ZOMBIE to ::KryptonZombie
     )
 
+    @Suppress("UNCHECKED_CAST")
+    fun <T : Entity> create(type: EntityType<T>, world: KryptonWorld): T? = TYPE_MAP[type]?.invoke(world) as? T
+
     fun create(type: EntityType<out Entity>, world: KryptonWorld): KryptonEntity? = TYPE_MAP[type]?.invoke(world)
 
     fun create(

@@ -25,8 +25,9 @@ import org.kryptonmc.api.registry.RegistryManager
 
 class KryptonRegistryManager : RegistryManager {
 
-    @Suppress("UNCHECKED_CAST")
     override fun <T : Any> register(registry: Registry<T>, key: Key, value: T) = registry.register(RegistryKey(registry.key, key), value)
+
+    override fun <T : Any> register(registry: Registry<T>, id: Int, key: Key, value: T) = registry.register(id, RegistryKey(registry.key, key), value)
 
     override fun <T : Any> create(key: RegistryKey<out Registry<T>>) = KryptonRegistry(key)
 

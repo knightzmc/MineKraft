@@ -20,7 +20,7 @@ package org.kryptonmc.krypton.command.arguments.coordinates
 
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import net.kyori.adventure.text.Component
-import org.kryptonmc.krypton.adventure.toMessage
+import org.kryptonmc.api.adventure.toMessage
 import org.kryptonmc.api.entity.player.Player
 import org.kryptonmc.api.space.Vector
 import org.spongepowered.math.vector.Vector2d

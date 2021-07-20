@@ -23,9 +23,9 @@ import net.kyori.adventure.identity.Identity
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.TextComponent
 import net.kyori.adventure.text.TranslatableComponent
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import net.kyori.adventure.translation.GlobalTranslator
 import org.kryptonmc.api.command.ConsoleSender
+import org.kryptonmc.krypton.adventure.toSectionText
 import org.kryptonmc.krypton.util.logger
 import java.util.Locale
 
@@ -42,6 +42,6 @@ object KryptonConsoleSender : ConsoleSender {
             is TextComponent -> message
             else -> return
         }
-        LOGGER.info(LegacyComponentSerializer.legacySection().serialize(component))
+        LOGGER.info(component.toSectionText())
     }
 }

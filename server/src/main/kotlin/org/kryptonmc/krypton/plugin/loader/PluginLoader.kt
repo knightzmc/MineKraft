@@ -44,7 +44,7 @@ import java.nio.file.Path
 import java.util.jar.JarInputStream
 import kotlin.io.path.inputStream
 
-class PluginLoader {
+object PluginLoader {
 
     fun loadDescription(source: Path): LoadedPluginDescriptionCandidate {
         val serialized = source.findMetadata() ?: throw InvalidPluginException("Could not find a valid krypton-plugin-meta.json or plugin.conf file!")

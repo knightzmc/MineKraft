@@ -8,6 +8,9 @@
  */
 package org.kryptonmc.api.world.rule
 
+import net.kyori.adventure.text.Component
+import net.kyori.adventure.text.ComponentLike
+
 /**
  * A rule dictating how a specific aspect of the game functions.
  *
@@ -18,4 +21,12 @@ package org.kryptonmc.api.world.rule
 class GameRule<V : Any>(
     val name: String,
     val default: V
-)
+) : ComponentLike {
+
+    /**
+     * The translation for this gamerule.
+     */
+    val translation = Component.translatable("gamerule.$name")
+
+    override fun asComponent() = translation
+}

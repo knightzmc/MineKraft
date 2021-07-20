@@ -28,6 +28,7 @@ import com.mojang.serialization.Dynamic
 import me.bardy.gsonkt.fromJson
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
+import org.kryptonmc.api.adventure.toJsonString
 import org.kryptonmc.krypton.util.datafix.References
 
 class StrictJsonWrittenBookPagesFix(outputSchema: Schema, changesType: Boolean) : DataFix(outputSchema, changesType) {
@@ -46,7 +47,7 @@ class StrictJsonWrittenBookPagesFix(outputSchema: Schema, changesType: Boolean) 
                 val component = if (string != "null" && string.isNotEmpty()) {
                     if (string.startsWith("\"") && string.endsWith("\"") || string.startsWith("{") && string.endsWith("}")) {
                         try {
-                            GsonComponentSerializer.gson().serializer().newBuilder().setLenient().create().fromJson<Component>(string)
+                            GSON.fromJson<Component>(string)
                         } catch (exception: JsonParseException) {
                             Component.empty()
                         }
@@ -56,9 +57,14 @@ class StrictJsonWrittenBookPagesFix(outputSchema: Schema, changesType: Boolean) 
                 } else {
                     Component.empty()
                 }
-                it.createString(GsonComponentSerializer.gson().serialize(component))
+                it.createString(component.toJsonString())
             }
         }
         DataFixUtils.orElse(result.map(pages::createList).result(), pages.emptyList())
+    }
+
+    companion object {
+
+        private val GSON = GsonComponentSerializer.gson().serializer().newBuilder().setLenient().create()
     }
 }

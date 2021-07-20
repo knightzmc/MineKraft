@@ -24,6 +24,7 @@ import com.mojang.brigadier.context.CommandContext
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
+import org.kryptonmc.api.adventure.toMessage
 import org.kryptonmc.api.command.Sender
 import org.kryptonmc.api.registry.Registries
 import org.kryptonmc.krypton.adventure.toMessage

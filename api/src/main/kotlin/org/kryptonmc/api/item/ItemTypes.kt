@@ -9,7 +9,6 @@
 package org.kryptonmc.api.item
 
 import net.kyori.adventure.key.Key
-import net.kyori.adventure.text.Component
 import org.kryptonmc.api.registry.Registries
 
 /**
@@ -158,7 +157,7 @@ object ItemTypes {
     @JvmField val ACACIA_LEAVES = register("acacia_leaves")
     @JvmField val DARK_OAK_LEAVES = register("dark_oak_leaves")
     @JvmField val AZALEA_LEAVES = register("azalea_leaves")
-    @JvmField val AZALEA_LEAVES_FLOWERS = register("azalea_leaves_flowers")
+    @JvmField val FLOWERING_AZALEA_LEAVES = register("flowering_azalea_leaves")
     @JvmField val SPONGE = register("sponge")
     @JvmField val WET_SPONGE = register("wet_sponge")
     @JvmField val GLASS = register("glass")
@@ -233,7 +232,7 @@ object ItemTypes {
     @JvmField val STONE_SLAB = register("stone_slab")
     @JvmField val SMOOTH_STONE_SLAB = register("smooth_stone_slab")
     @JvmField val SANDSTONE_SLAB = register("sandstone_slab")
-    @JvmField val CUT_STANDSTONE_SLAB = register("cut_standstone_slab")
+    @JvmField val CUT_SANDSTONE_SLAB = register("cut_sandstone_slab")
     @JvmField val PETRIFIED_OAK_SLAB = register("petrified_oak_slab")
     @JvmField val COBBLESTONE_SLAB = register("cobblestone_slab")
     @JvmField val BRICK_SLAB = register("brick_slab")
@@ -1127,5 +1126,5 @@ object ItemTypes {
         maximumAmount: Int = 64,
         durability: Int = 0,
         isFireResistant: Boolean = false
-    ) = Registries.register(Registries.ITEM, key, ItemType(Key.key(key), rarity, maximumAmount, durability, isFireResistant, Component.translatable("block.minecraft.$key")))
+    ) = Registries.register(Registries.ITEM, key, ItemType(Key.key(key), rarity, maximumAmount, durability, isFireResistant))
 }

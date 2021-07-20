@@ -22,30 +22,38 @@ import net.kyori.adventure.identity.Identity
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.event.HoverEvent.ShowEntity
 import net.kyori.adventure.text.event.HoverEvent.showEntity
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
-import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer
 import org.jglrxavpok.hephaistos.nbt.NBTCompound
 import org.jglrxavpok.hephaistos.nbt.NBTDouble
 import org.jglrxavpok.hephaistos.nbt.NBTFloat
 import org.jglrxavpok.hephaistos.nbt.NBTList
 import org.jglrxavpok.hephaistos.nbt.NBTTypes
+import org.kryptonmc.api.adventure.toJsonString
 import org.kryptonmc.api.entity.Entity
 import org.kryptonmc.api.entity.EntityType
 import org.kryptonmc.api.space.Vector
 import org.kryptonmc.api.world.Location
 import org.kryptonmc.krypton.ServerStorage
+import org.kryptonmc.krypton.adventure.toJsonComponent
+import org.kryptonmc.krypton.adventure.toSectionText
 import org.kryptonmc.krypton.command.KryptonSender
 import org.kryptonmc.krypton.entity.metadata.MetadataHolder
 import org.kryptonmc.krypton.entity.metadata.MetadataKey
 import org.kryptonmc.krypton.entity.metadata.MetadataKeys
 import org.kryptonmc.krypton.entity.player.KryptonPlayer
+import org.kryptonmc.krypton.packet.out.play.PacketOutDestroyEntities
+import org.kryptonmc.krypton.packet.out.play.PacketOutHeadLook
+import org.kryptonmc.krypton.packet.out.play.PacketOutMetadata
+import org.kryptonmc.krypton.packet.out.play.PacketOutSpawnEntity
+import org.kryptonmc.krypton.packet.state.PlayPacket
 import org.kryptonmc.krypton.util.nbt.Serializable
 import org.kryptonmc.krypton.util.nbt.containsUUID
 import org.kryptonmc.krypton.util.nbt.getUUID
 import org.kryptonmc.krypton.util.nbt.setUUID
 import org.kryptonmc.krypton.util.nextUUID
+import org.kryptonmc.krypton.util.toAngle
 import org.kryptonmc.krypton.world.KryptonWorld
 import java.util.Optional
+import java.util.concurrent.ConcurrentHashMap
 import java.util.function.UnaryOperator
 import kotlin.math.abs
 import kotlin.math.sqrt
@@ -68,9 +76,12 @@ abstract class KryptonEntity(
     override var isPersistent = false
     override var ticksLived = 0
     override val name: String
-        get() = LegacyComponentSerializer.legacySection().serialize(displayName)
+        get() = displayName.toSectionText()
 
-    open val maxAirTicks = 300
+    open val maxAirTicks: Int
+        get() = 300
+    val viewers: MutableSet<KryptonPlayer> = ConcurrentHashMap.newKeySet()
+    private var isRemoved = false
 
     init {
         data += MetadataKeys.FLAGS
@@ -108,7 +119,7 @@ abstract class KryptonEntity(
 
         if (!location.x.isFinite() || !location.y.isFinite() || !location.z.isFinite()) error("Entity has invalid coordinates! Coordinates must be finite!")
         if (!location.yaw.isFinite() || !location.pitch.isFinite()) error("Entity has invalid rotation!")
-        if (tag.contains("CustomName", NBTTypes.TAG_String)) displayName = GsonComponentSerializer.gson().deserialize(tag.getString("CustomName"))
+        if (tag.contains("CustomName", NBTTypes.TAG_String)) displayName = tag.getString("CustomName").toJsonComponent()
         isDisplayNameVisible = tag.getBoolean("CustomNameVisible")
         isSilent = tag.getBoolean("Silent")
         hasGravity = !tag.getBoolean("NoGravity")
@@ -120,7 +131,7 @@ abstract class KryptonEntity(
         .apply {
             if (isDisplayNameVisible) {
                 setBoolean("CustomNameVisible", true)
-                setString("CustomName", GsonComponentSerializer.gson().serialize(displayName))
+                setString("CustomName", displayName.toJsonString())
             }
             if (isSilent) setBoolean("Silent", true)
             if (!hasGravity) setBoolean("NoGravity", true)
@@ -145,6 +156,24 @@ abstract class KryptonEntity(
         })
         .setUUID("UUID", uuid)
 
+    open fun addViewer(player: KryptonPlayer): Boolean {
+        if (!viewers.add(player)) return false
+        player.viewableEntities.add(this)
+        player.session.sendPacket(getSpawnPacket())
+        player.session.sendPacket(PacketOutMetadata(id, data.all))
+        player.session.sendPacket(PacketOutHeadLook(id, location.yaw.toAngle()))
+        return true
+    }
+
+    open fun removeViewer(player: KryptonPlayer): Boolean {
+        if (!viewers.remove(player)) return false
+        player.session.sendPacket(PacketOutDestroyEntities(id))
+        player.viewableEntities.remove(this)
+        return true
+    }
+
+    protected open fun getSpawnPacket(): PlayPacket = PacketOutSpawnEntity(this)
+
     private fun getSharedFlag(flag: Int) = data[MetadataKeys.FLAGS].toInt() and (1 shl flag) != 0
 
     private fun setSharedFlag(flag: Int, state: Boolean) {
@@ -152,7 +181,11 @@ abstract class KryptonEntity(
         data[MetadataKeys.FLAGS] = (if (state) flags or (1 shl flag) else flags and (1 shl flag).inv()).toByte()
     }
 
-    override fun remove() = Unit // TODO: Make this do something
+    override fun remove() {
+        if (isRemoved) return
+        isRemoved = true
+        world.removeEntity(this)
+    }
 
     override fun identity() = Identity.identity(uuid)
 
@@ -225,4 +258,7 @@ abstract class KryptonEntity(
     var frozenTicks: Int
         get() = data[MetadataKeys.FROZEN_TICKS]
         set(value) = data.set(MetadataKeys.FROZEN_TICKS, value)
+
+    val hasVelocity: Boolean
+        get() = velocity.x != 0.0 && velocity.y != 0.0 && velocity.z != 0.0
 }

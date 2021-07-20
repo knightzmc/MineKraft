@@ -25,9 +25,9 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
 import org.jglrxavpok.hephaistos.nbt.NBTCompound
+import org.kryptonmc.api.adventure.toMessage
 import org.kryptonmc.api.command.Sender
 import org.kryptonmc.api.space.Position
-import org.kryptonmc.krypton.adventure.toMessage
 import org.kryptonmc.krypton.command.InternalCommand
 import org.kryptonmc.krypton.command.SuggestionProviders
 import org.kryptonmc.krypton.command.arguments.NBTCompoundArgument

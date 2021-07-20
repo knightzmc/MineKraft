@@ -19,6 +19,12 @@
 package org.kryptonmc.krypton.util
 
 import org.kryptonmc.api.space.Position
+import org.kryptonmc.api.util.floor
+import org.kryptonmc.api.world.Location
+import org.kryptonmc.krypton.entity.KryptonEntity
+import org.kryptonmc.krypton.world.KryptonWorld
+import org.kryptonmc.krypton.world.chunk.ChunkPosition
+import kotlin.math.abs
 
 val Position.isInSpawnableBounds: Boolean
     get() = !blockX.isOutsideSpawnableHeight && isInHorizontalWorldBounds
@@ -28,3 +34,51 @@ val Int.isOutsideSpawnableHeight: Boolean
 
 val Position.isInHorizontalWorldBounds: Boolean
     get() = blockX >= -30000000 && blockZ >= -30000000 && blockX < 30000000 && blockZ < 30000000
+
+fun KryptonWorld.forEachInRange(location: Location, viewDistance: Int, callback: (KryptonEntity) -> Unit) {
+    val chunksInRange = location.chunksInRange(viewDistance)
+    chunksInRange.forEach {
+        val chunk = getChunkAt(it.chunkX, it.chunkZ) ?: return@forEach
+        getEntitiesInChunk(chunk).forEach(callback)
+    }
+}
+
+val Long.chunkX: Int
+    get() = (this and 4294967295L).toInt()
+
+val Long.chunkZ: Int
+    get() = (this ushr 32 and 4294967295L).toInt()
+
+private fun Location.chunksInRange(range: Int): LongArray {
+    val visible = LongArray(range.toArea())
+    var xDistance = 0
+    var xDirection = 1
+    var zDistance = 0
+    var zDirection = -1
+    var length = 1
+    var corner = 0
+
+    for (i in visible.indices) {
+        val chunkX = (xDistance * 16 + x).toChunkCoordinate()
+        val chunkZ = (zDistance * 16 + z).toChunkCoordinate()
+        visible[i] = ChunkPosition.toLong(chunkX, chunkZ)
+
+        if (corner % 2 == 0) {
+            xDistance += xDirection
+            if (abs(xDistance) == length) {
+                corner++
+                xDirection = -xDirection
+            }
+        } else {
+            zDistance += zDirection
+            if (abs(zDistance) == length) {
+                corner++
+                zDirection = -zDirection
+                if (corner % 4 == 0) length++
+            }
+        }
+    }
+    return visible
+}
+
+private fun Double.toChunkCoordinate(): Int = Math.floorDiv(floor(), 16)

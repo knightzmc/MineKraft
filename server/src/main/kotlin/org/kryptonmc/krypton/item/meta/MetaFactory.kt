@@ -18,14 +18,15 @@
  */
 package org.kryptonmc.krypton.item.meta
 
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import org.jglrxavpok.hephaistos.nbt.NBTCompound
 import org.jglrxavpok.hephaistos.nbt.NBTList
 import org.jglrxavpok.hephaistos.nbt.NBTString
 import org.jglrxavpok.hephaistos.nbt.NBTTypes
+import org.kryptonmc.api.adventure.toJsonString
 import org.kryptonmc.api.block.Block
 import org.kryptonmc.api.item.meta.MetaKey
 import org.kryptonmc.api.item.meta.MetaKeys
+import org.kryptonmc.krypton.adventure.toJsonComponent
 import org.kryptonmc.krypton.item.ItemFlag
 import org.kryptonmc.krypton.world.block.BLOCK_LOADER
 import java.awt.Color
@@ -51,13 +52,13 @@ object MetaFactory {
         ),
         MetaKeys.CAN_PLACE_ON to BLOCK_LIST_META_SERIALIZER,
         MetaKeys.NAME to ItemMetaSerializer(
-            { GsonComponentSerializer.gson().deserialize(it.getCompound("display").getString("Name")) },
-            { nbt, name -> nbt.getCompound("display").setString("Name", GsonComponentSerializer.gson().serialize(name)) },
+            { it.getCompound("display").getString("Name").toJsonComponent() },
+            { nbt, name -> nbt.getCompound("display").setString("Name", name.toJsonString()) },
             { it.contains("display", NBTTypes.TAG_Compound) && it.getCompound("display").contains("Name", NBTTypes.TAG_String) }
         ),
         MetaKeys.LORE to ItemMetaSerializer(
-            { nbt -> nbt.getCompound("display").getList<NBTString>("Lore").map { GsonComponentSerializer.gson().deserialize(it.value) } },
-            { nbt, lore -> nbt.getCompound("display")["Lore"] = NBTList<NBTString>(NBTTypes.TAG_String).apply { lore.forEach { add(NBTString(GsonComponentSerializer.gson().serialize(it))) } } },
+            { nbt -> nbt.getCompound("display").getList<NBTString>("Lore").map { it.value.toJsonComponent() } },
+            { nbt, lore -> nbt.getCompound("display")["Lore"] = NBTList<NBTString>(NBTTypes.TAG_String).apply { lore.forEach { add(NBTString(it.toJsonString())) } } },
             { it.contains("display", NBTTypes.TAG_Compound) && it.getCompound("display").contains("Lore", NBTTypes.TAG_List) }
         ),
         MetaKeys.COLOR to ItemMetaSerializer(

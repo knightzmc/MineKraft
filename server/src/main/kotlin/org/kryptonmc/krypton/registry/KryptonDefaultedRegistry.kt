@@ -30,9 +30,9 @@ class KryptonDefaultedRegistry<T : Any>(
 
     override lateinit var defaultValue: T
 
-    override fun <V : T> register(key: RegistryKey<T>, value: V): V {
+    override fun <V : T> register(id: Int, key: RegistryKey<T>, value: V): V {
         if (key.location == defaultKey) defaultValue = value
-        return super.register(key, value)
+        return super.register(id, key, value)
     }
 
     override fun get(key: Key) = super.get(key) ?: defaultValue

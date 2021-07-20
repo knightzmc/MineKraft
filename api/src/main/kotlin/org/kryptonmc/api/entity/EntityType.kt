@@ -21,7 +21,7 @@ import net.kyori.adventure.text.TranslatableComponent
  *        the /summon command or [org.kryptonmc.api.world.World.spawnEntity]
  * @param name the name of this entity type
  */
-data class EntityType<T : Entity> @JvmOverloads constructor(
+data class EntityType<T : Entity>(
     val key: Key,
     val isSummonable: Boolean,
     val name: TranslatableComponent = translatable("entity.${key.namespace()}.${key.value().replace("/", ".")}"),

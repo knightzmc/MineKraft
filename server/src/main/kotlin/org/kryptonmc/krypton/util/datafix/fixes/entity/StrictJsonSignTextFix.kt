@@ -26,6 +26,7 @@ import com.mojang.serialization.Dynamic
 import me.bardy.gsonkt.fromJson
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
+import org.kryptonmc.api.adventure.toJsonString
 import org.kryptonmc.krypton.util.datafix.References
 
 class StrictJsonSignTextFix(outputSchema: Schema, changesType: Boolean) : NamedEntityFix(outputSchema, changesType, "StrictJsonSignTextFix", References.BLOCK_ENTITY, "Sign") {
@@ -42,7 +43,7 @@ class StrictJsonSignTextFix(outputSchema: Schema, changesType: Boolean) : NamedE
         val component = if (line != "null" && line.isNotEmpty()) {
             if (line.startsWith("\"") && line.endsWith("\"") || line.startsWith("{") && line.endsWith("}")) {
                 try {
-                    GsonComponentSerializer.gson().serializer().newBuilder().setLenient().create().fromJson<Component>(line)
+                    GSON.fromJson<Component>(line)
                 } catch (exception: JsonParseException) {
                     Component.empty()
                 }
@@ -52,6 +53,11 @@ class StrictJsonSignTextFix(outputSchema: Schema, changesType: Boolean) : NamedE
         } else {
             Component.empty()
         }
-        return set(lineName, createString(GsonComponentSerializer.gson().serialize(component)))
+        return set(lineName, createString(component.toJsonString()))
+    }
+
+    companion object {
+
+        private val GSON = GsonComponentSerializer.gson().serializer().newBuilder().setLenient().create()
     }
 }

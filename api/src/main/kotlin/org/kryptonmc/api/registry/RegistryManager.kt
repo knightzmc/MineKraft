@@ -36,6 +36,28 @@ interface RegistryManager {
     fun <T : Any> register(registry: Registry<T>, key: Key, value: T): T
 
     /**
+     * Registers a new entry to the given [registry], with the given [key] mapped to
+     * the given [value].
+     *
+     * @param registry the registry to register to
+     * @param id the ID of the entry in the registry
+     * @param key the key
+     * @param value the value
+     */
+    fun <T : Any> register(registry: Registry<T>, id: Int, key: String, value: T): T = register(registry, id, Key.key(key), value)
+
+    /**
+     * Registers a new entry to the given [registry], with the given [key] mapped to
+     * the given [value].
+     *
+     * @param registry the registry to register to
+     * @param id the ID of the entry in the registry
+     * @param key the key
+     * @param value the value
+     */
+    fun <T : Any> register(registry: Registry<T>, id: Int, key: Key, value: T): T
+
+    /**
      * Creates a new registry with the given registry [key].
      *
      * @param key the registry key

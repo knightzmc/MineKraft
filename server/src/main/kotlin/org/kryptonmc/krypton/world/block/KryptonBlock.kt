@@ -20,6 +20,7 @@ package org.kryptonmc.krypton.world.block
 
 import net.kyori.adventure.text.Component
 import org.kryptonmc.api.block.Block
+import org.kryptonmc.api.item.ItemType
 import org.kryptonmc.api.registry.Registries
 import org.kryptonmc.krypton.registry.block.BlockData
 
@@ -57,6 +58,7 @@ class KryptonBlock(
     override val opacity = data.opacity
     override val requiresCorrectTool = data.toolRequired
     override val translation = Component.translatable(data.translationKey)
+    private val itemKey = data.itemKey
 
     init {
         Registries.register(Registries.BLOCK, key, this)
@@ -66,6 +68,8 @@ class KryptonBlock(
         val properties = properties.toMutableMap().apply { put(key, value) }
         return requireNotNull(KryptonBlockLoader.properties(this.key.asString(), properties)) { "Invalid properties: $key:$value" }
     }
+
+    override fun asItem() = itemKey?.let { Registries.ITEM[it] }
 
     override fun compareTo(other: Block) = id.compareTo(other.id)
 }

@@ -9,8 +9,10 @@
 package org.kryptonmc.api.item
 
 import net.kyori.adventure.key.Key
+import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.ComponentLike
-import net.kyori.adventure.text.TranslatableComponent
+import org.kryptonmc.api.block.BlockLike
+import org.kryptonmc.api.registry.Registries
 
 /**
  * Represents a type of item.
@@ -21,16 +23,21 @@ import net.kyori.adventure.text.TranslatableComponent
  * stack
  * @param durability the durability of the item
  * @param isFireResistant if this item is resistant to fire
- * @param translation the translation for this item
  */
 data class ItemType(
     val key: Key,
     val rarity: ItemRarity,
     val maximumAmount: Int,
     val durability: Int,
-    val isFireResistant: Boolean,
-    val translation: TranslatableComponent
-) : ComponentLike {
+    val isFireResistant: Boolean
+) : BlockLike, ComponentLike {
+
+    /**
+     * The translation for this item.
+     */
+    val translation = Registries.BLOCK[key]?.translation ?: Component.translatable("item.${key.asString().replace(':', '.')}")
+
+    override fun asBlock() = Registries.BLOCK[key]
 
     override fun asComponent() = translation
 }

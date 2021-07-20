@@ -22,13 +22,10 @@ import com.mojang.brigadier.suggestion.SuggestionProvider
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.key.Key.key
 import net.kyori.adventure.text.Component.translatable
+import org.kryptonmc.api.adventure.toMessage
 import org.kryptonmc.api.command.Sender
 import org.kryptonmc.api.entity.EntityType
 import org.kryptonmc.api.registry.Registries
-import org.kryptonmc.krypton.KryptonServer
-import org.kryptonmc.krypton.adventure.toMessage
-import org.kryptonmc.krypton.command.arguments.entities.EntityArgument
-import org.kryptonmc.krypton.command.arguments.entities.EntityArguments
 
 // TODO: Use this later
 object SuggestionProviders {
@@ -43,22 +40,6 @@ object SuggestionProviders {
             translatable("entity.${key.namespace()}.${key.value().replace("/", ".")}").toMessage()
         }
     }
-    //Will probably deleted
-    val ENTITIES: (KryptonServer, EntityArgument.EntityType) -> SuggestionProvider<Sender> = { server, type ->
-        register(key("players")) { _, builder ->
-            when (type) {
-                EntityArgument.EntityType.ENTITY -> {
-                    val validArguments = EntityArguments.SELECTOR_ALL + server.players.map { it.name }
-                    builder.suggest(validArguments)
-                }
-                EntityArgument.EntityType.PLAYER -> {
-                    val validArguments = EntityArguments.SELECTOR_PLAYERS + server.players.map { it.name }
-                    builder.suggest(validArguments)
-                }
-            }
-        }
-    }
-
 
     fun register(key: Key, provider: SuggestionProvider<Sender>): SuggestionProvider<Sender> {
         require(key !in PROVIDERS_BY_NAME) { "A command suggestion provider is already registered with the given key $key!" }

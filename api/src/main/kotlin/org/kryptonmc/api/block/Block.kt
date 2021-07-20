@@ -11,6 +11,7 @@ package org.kryptonmc.api.block
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.TranslatableComponent
 import org.jetbrains.annotations.Contract
+import org.kryptonmc.api.item.ItemLike
 
 /**
  * Represents a block with certain properties.
@@ -21,7 +22,7 @@ import org.jetbrains.annotations.Contract
  * technical standpoint, reduces allocations, but also makes
  * them much more thread-safe.
  */
-interface Block : Comparable<Block> {
+interface Block : ItemLike, Comparable<Block> {
 
     /**
      * The key associated with this block.

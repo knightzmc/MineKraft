@@ -25,7 +25,7 @@ import com.mojang.datafixers.TypeRewriteRule
 import com.mojang.datafixers.schemas.Schema
 import com.mojang.serialization.Dynamic
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
+import org.kryptonmc.api.adventure.toJsonString
 import org.kryptonmc.krypton.util.datafix.References
 import java.util.stream.Stream
 
@@ -52,4 +52,4 @@ private fun <T> Stream<out Dynamic<out T>>.fixLoreList() = map {
     DataFixUtils.orElse(it.asString().map(String::fixLoreEntry).map(it::createString).result(), it)
 }
 
-private fun String.fixLoreEntry() = GsonComponentSerializer.gson().serialize(Component.text(this))
+private fun String.fixLoreEntry() = Component.text(this).toJsonString()

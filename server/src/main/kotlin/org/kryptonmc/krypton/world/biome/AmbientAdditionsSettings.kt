@@ -16,15 +16,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-package org.kryptonmc.krypton.adventure
+package org.kryptonmc.krypton.world.biome
 
-import com.mojang.brigadier.Message
-import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer
+import org.kryptonmc.api.effect.sound.SoundEvent
 
-class AdventureMessage(val wrapped: Component) : Message {
-
-    override fun getString() = PlainTextComponentSerializer.plainText().serialize(wrapped)
-}
-
-fun Component.toMessage() = AdventureMessage(this)
+data class AmbientAdditionsSettings(
+    val sound: SoundEvent,
+    val probability: Double
+)

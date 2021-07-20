@@ -26,6 +26,7 @@ import com.github.ajalt.clikt.parameters.options.option
 import org.kryptonmc.krypton.KryptonServer.KryptonServerInfo
 import org.kryptonmc.krypton.locale.Messages
 import org.kryptonmc.krypton.locale.TranslationManager
+import org.kryptonmc.krypton.util.Bootstrap
 import org.kryptonmc.krypton.util.logger
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicReference
@@ -58,6 +59,10 @@ class KryptonCLI : CliktCommand() {
         val logger = logger("Krypton")
         Messages.LOAD.info(logger, KryptonServerInfo.version, KryptonServerInfo.minecraftVersion)
         if (MAX_MEMORY < MEMORY_WARNING_THRESHOLD) Messages.LOAD_LOW_MEMORY.warn(logger, MEMORY_WARNING_THRESHOLD.toString(), KryptonServerInfo.version)
+
+        // Run the bootstrap
+        Bootstrap.preload()
+        Bootstrap.validate()
 
         val reference = AtomicReference<KryptonServer>()
         val mainThread = Thread({ reference.get().start() }, "Server Thread").apply {

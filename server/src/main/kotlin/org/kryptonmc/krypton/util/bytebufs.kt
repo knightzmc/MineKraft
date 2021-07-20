@@ -31,10 +31,10 @@ import io.netty.handler.codec.EncoderException
 import it.unimi.dsi.fastutil.ints.IntList
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import org.jglrxavpok.hephaistos.nbt.NBTCompound
 import org.jglrxavpok.hephaistos.nbt.NBTReader
 import org.jglrxavpok.hephaistos.nbt.NBTWriter
+import org.kryptonmc.api.adventure.toJsonString
 import org.kryptonmc.api.block.BlockHitResult
 import org.kryptonmc.api.effect.particle.ColorParticleData
 import org.kryptonmc.api.effect.particle.DirectionalParticleData
@@ -185,7 +185,7 @@ fun ByteBuf.readNBTCompound(): NBTCompound {
 }
 
 fun ByteBuf.writeChat(component: Component) {
-    writeString(GsonComponentSerializer.gson().serialize(TranslationManager.render(component)))
+    writeString(TranslationManager.render(component).toJsonString())
 }
 
 fun ByteBuf.readItem(): KryptonItemStack {

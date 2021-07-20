@@ -185,7 +185,7 @@ object GameRules {
      * This is a boolean game rule, with a default value of `true`.
      */
     @JvmField
-    val FORGIVE_DEAD_PLAYERS = register("forgive_dead_players", "forgive_dead_players", true)
+    val FORGIVE_DEAD_PLAYERS = register("forgive_dead_players", "forgiveDeadPlayers", true)
 
     /**
      * Whether [Player]s should keep items in their inventory after death.
@@ -193,7 +193,7 @@ object GameRules {
      * This is a boolean game rule, with a default value of `false`.
      */
     @JvmField
-    val KEEP_INVENTORY = register("keep_inventory", "keep_inventory", false)
+    val KEEP_INVENTORY = register("keep_inventory", "keepInventory", false)
 
     /**
      * Whether to log admin commands to server log.
@@ -201,7 +201,7 @@ object GameRules {
      * This is a boolean game rule, with a default value of `true`.
      */
     @JvmField
-    val LOG_ADMIN_COMMANDS = register("log_admin_commands", "log_admin_commands", true)
+    val LOG_ADMIN_COMMANDS = register("log_admin_commands", "logAdminCommands", true)
 
     /**
      * The total number of chain commands that can run during a single tick.
@@ -209,7 +209,7 @@ object GameRules {
      * This is a numerical game rule, with a default value of `65536`.
      */
     @JvmField
-    val MAX_COMMAND_CHAIN_LENGTH = register("max_command_chain_length", "max_command_chain_length", 65536)
+    val MAX_COMMAND_CHAIN_LENGTH = register("max_command_chain_length", "maxCommandChainLength", 65536)
 
     /**
      * The maximum number of other pushable entities a mob or player can push, before taking 3 suffocation
@@ -224,7 +224,7 @@ object GameRules {
      * This is a numerical game rule, with a default value of `24`.
      */
     @JvmField
-    val MAX_ENTITY_CRAMMING = register("max_entity_cramming", "max_entity_cramming", 24)
+    val MAX_ENTITY_CRAMMING = register("max_entity_cramming", "maxEntityCramming", 24)
 
     /**
      * Whether [Mob]s should be able to change blocks and pick up items.
@@ -232,7 +232,7 @@ object GameRules {
      * This is a boolean game rule, with a default value of `true`.
      */
     @JvmField
-    val MOB_GRIEFING = register("mob_griefing", "mob_griefing", true)
+    val MOB_GRIEFING = register("mob_griefing", "mobGriefing", true)
 
     /**
      * Whether [Player]s can regenerate health naturally if their hunger is full enough (doesn't affect
@@ -241,7 +241,7 @@ object GameRules {
      * This is a boolean game rule, with a default value of `true`.
      */
     @JvmField
-    val NATURAL_REGENERATION = register("natural_regeneration", "natural_regeneration", true)
+    val NATURAL_REGENERATION = register("natural_regeneration", "naturalRegeneration", true)
 
     /**
      * How often a random block tick occurs (such as plant growth, leaf decay, etc.) per chunk section
@@ -252,7 +252,7 @@ object GameRules {
      * This is a numerical game rule, with a default value of `3`.
      */
     @JvmField
-    val RANDOM_TICK_SPEED = register("random_tick_speed", "random_tick_speed", 3)
+    val RANDOM_TICK_SPEED = register("random_tick_speed", "randomTickSpeed", 3)
 
     /**
      * Whether the debug screen shows all or reduced information.
@@ -260,7 +260,7 @@ object GameRules {
      * This is a boolean game rule, with a default value of `false`.
      */
     @JvmField
-    val REDUCED_DEBUG_INFO = register("reduced_debug_info", "reduced_debug_info", false)
+    val REDUCED_DEBUG_INFO = register("reduced_debug_info", "reducedDebugInfo", false)
 
     /**
      * Whether the feedback from commands executed by a [Player] should show up in chat.
@@ -271,7 +271,7 @@ object GameRules {
      * This is a boolean game rule, with a default value of `true`.
      */
     @JvmField
-    val SEND_COMMAND_FEEDBACK = register("send_command_feedback", "send_command_feedback", true)
+    val SEND_COMMAND_FEEDBACK = register("send_command_feedback", "sendCommandFeedback", true)
 
     /**
      * Whether a message appears in chat when a [Player] dies.
@@ -279,7 +279,7 @@ object GameRules {
      * This is a boolean game rule, with a default value of `true`.
      */
     @JvmField
-    val SHOW_DEATH_MESSAGES = register("show_death_messages", "show_death_messages", true)
+    val SHOW_DEATH_MESSAGES = register("show_death_messages", "showDeathMessages", true)
 
     /**
      * The number of blocks outward from the world spawn coordinates that a player will spawn in
@@ -288,7 +288,7 @@ object GameRules {
      * This is a numerical game rule, with a default value of `10`.
      */
     @JvmField
-    val SPAWN_RADIUS = register("spawn_radius", "spawn_radius", 10)
+    val SPAWN_RADIUS = register("spawn_radius", "spawnRadius", 10)
 
     /**
      * Whether players in [spectator mode][org.kryptonmc.api.world.Gamemode.SPECTATOR] can
@@ -297,7 +297,7 @@ object GameRules {
      * This is a boolean game rule, with a default value of `true`.
      */
     @JvmField
-    val SPECTATORS_GENERATE_CHUNKS = register("spectators_generate_chunks", "spectators_generate_chunks", true)
+    val SPECTATORS_GENERATE_CHUNKS = register("spectators_generate_chunks", "spectatorsGenerateChunks", true)
 
     /**
      * Makes angered neutral mobs attack any nearby player, not just the player that angered them.
@@ -305,9 +305,9 @@ object GameRules {
      * This is a boolean game rule, with a default value of `false`.
      */
     @JvmField
-    val UNIVERSAL_ANGER = register("universal_anger", "universal_anger", false)
-    // @formatter:on
+    val UNIVERSAL_ANGER = register("universal_anger", "universalAnger", false)
 
+    // @formatter:on
     @Suppress("UNCHECKED_CAST")
     private fun <V : Any> register(key: String, name: String, default: V): GameRule<V> = Registries.register(
         Registries.GAMERULES,

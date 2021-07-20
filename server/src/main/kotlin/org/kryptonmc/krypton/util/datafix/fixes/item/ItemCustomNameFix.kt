@@ -24,7 +24,7 @@ import com.mojang.datafixers.TypeRewriteRule
 import com.mojang.datafixers.schemas.Schema
 import com.mojang.serialization.Dynamic
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
+import org.kryptonmc.api.adventure.toJsonString
 import org.kryptonmc.krypton.util.datafix.References
 
 class ItemCustomNameFix(outputSchema: Schema, changesType: Boolean) : DataFix(outputSchema, changesType) {
@@ -41,11 +41,11 @@ class ItemCustomNameFix(outputSchema: Schema, changesType: Boolean) : DataFix(ou
         var display = optionalDisplay.get()
         val name = display["Name"].asString().result()
         if (name.isPresent) {
-            display = display.set("Name", display.createString(GsonComponentSerializer.gson().serialize(Component.text(name.get()))))
+            display = display.set("Name", display.createString(Component.text(name.get()).toJsonString()))
         } else {
             val locName = display["LocName"].asString().result()
             if (locName.isPresent) {
-                display = display.set("Name", display.createString(GsonComponentSerializer.gson().serialize(Component.translatable(locName.get()))))
+                display = display.set("Name", display.createString(Component.translatable(locName.get()).toJsonString()))
                 display = display.remove("LocName")
             }
         }

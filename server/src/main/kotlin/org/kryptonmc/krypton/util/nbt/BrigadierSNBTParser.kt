@@ -39,7 +39,7 @@ import org.jglrxavpok.hephaistos.nbt.NBTNumber
 import org.jglrxavpok.hephaistos.nbt.NBTShort
 import org.jglrxavpok.hephaistos.nbt.NBTString
 import org.jglrxavpok.hephaistos.nbt.NBTTypes
-import org.kryptonmc.krypton.adventure.toMessage
+import org.kryptonmc.api.adventure.toMessage
 
 class BrigadierSNBTParser(private val reader: StringReader) {
 

@@ -48,11 +48,10 @@ class KryptonPluginManager(private val server: KryptonServer) : PluginManager {
 
     fun loadPlugins(directory: Path) {
         val found = mutableListOf<PluginDescription>()
-        val loader = PluginLoader()
 
         directory.forEachDirectoryEntry({ it.isRegularFile() && it.toString().endsWith(".jar") }, {
             try {
-                found += loader.loadDescription(it)
+                found += PluginLoader.loadDescription(it)
             } catch (exception: Exception) {
                 Messages.PLUGIN.LOAD.ERROR.UNABLE.error(LOGGER, it, exception)
             }
@@ -73,7 +72,7 @@ class KryptonPluginManager(private val server: KryptonServer) : PluginManager {
             }
 
             try {
-                val description = loader.loadPlugin(candidate)
+                val description = PluginLoader.loadPlugin(candidate)
                 val container = KryptonPluginContainer(description)
                 pluginContainers[container] = PluginModule(description, container, directory)
                 loadedPluginsById += description.id
@@ -87,7 +86,7 @@ class KryptonPluginManager(private val server: KryptonServer) : PluginManager {
             val description = container.description as LoadedPluginDescription
 
             try {
-                loader.createPlugin(container, module, commonModule)
+                PluginLoader.createPlugin(container, module, commonModule)
             } catch (exception: Exception) {
                 Messages.PLUGIN.LOAD.ERROR.CREATE_PLUGIN.error(LOGGER, description.id, exception)
                 return@forEach

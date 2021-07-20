@@ -19,9 +19,9 @@
 package org.kryptonmc.krypton.world.block.blocks
 
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import org.jglrxavpok.hephaistos.nbt.NBTCompound
 import org.kryptonmc.api.space.Vector
+import org.kryptonmc.krypton.adventure.toJsonComponent
 import org.kryptonmc.krypton.world.block.tile.BlockEntity
 
 // TODO: Add this
@@ -38,8 +38,7 @@ data class BannerEntity(
     companion object {
 
         fun fromNBT(position: Vector, keepPacked: Boolean, nbt: NBTCompound): BannerEntity {
-            val customName = nbt.getString("CustomName").takeIf { it.isNotEmpty() }
-                ?.let { GsonComponentSerializer.gson().deserialize(it) }
+            val customName = nbt.getString("CustomName").takeIf { it.isNotEmpty() }?.toJsonComponent()
             val patterns = nbt.getList<NBTCompound>("Patterns").map {
                 BannerPattern(
                     BannerPatternType.fromCode(it.getString("Pattern")),

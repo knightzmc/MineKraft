@@ -8,6 +8,7 @@
  */
 package org.kryptonmc.api.space
 
+import org.kryptonmc.api.util.StringSerializable
 import org.kryptonmc.api.util.asLong
 import org.kryptonmc.api.util.floor
 import org.spongepowered.math.vector.Vector3i
@@ -18,7 +19,7 @@ import kotlin.math.abs
  * Represents a three-dimensional
  * [Cardinal direction](https://en.wikipedia.org/wiki/Cardinal_direction).
  *
- * @param key the name (not named "name" due to enum limits)
+ * @param serialized the name
  * @param axis the axis of this direction
  * @param axisDirection the direction of the axis of this direction
  * @param normal the normal of this direction
@@ -27,11 +28,11 @@ enum class Direction(
     private val data3D: Int,
     private val oppositeIndex: Int,
     private val data2D: Int,
-    val key: String,
+    override val serialized: String,
     val axis: Axis,
     val axisDirection: AxisDirection,
     val normal: Vector3i
-) {
+) : StringSerializable {
 
     DOWN(0, 1, -1, "down", Axis.Y, AxisDirection.NEGATIVE, Vector3i(0, -1, 0)),
     UP(1, 0, -1, "up", Axis.Y, AxisDirection.POSITIVE, Vector3i(0, 1, 0)),
@@ -67,14 +68,12 @@ enum class Direction(
      */
     val opposite by lazy { from3D(oppositeIndex) }
 
-    override fun toString() = key
-
     /**
      * Axes that a direction may be on.
      *
-     * @param key the name (not named "name" due to enum limits)
+     * @param serialized the name
      */
-    enum class Axis(val key: String) : (Direction?) -> Boolean, Predicate<Direction?> {
+    enum class Axis(override val serialized: String) : (Direction?) -> Boolean, Predicate<Direction?>, StringSerializable {
 
         X("x"),
         Y("y"),
@@ -95,17 +94,15 @@ enum class Direction(
         override fun invoke(direction: Direction?) = direction != null && direction.axis == this
 
         override fun test(t: Direction?) = invoke(t)
-
-        override fun toString() = key
     }
 
     /**
      * The direction of an [Axis] on a plane.
      *
      * @param step the step
-     * @param key the name (not named "name" due to enum limits)
+     * @param serialized the name
      */
-    enum class AxisDirection(val step: Int, val key: String) {
+    enum class AxisDirection(val step: Int, override val serialized: String) : StringSerializable {
 
         POSITIVE(1, "Towards positive"),
         NEGATIVE(-1, "Towards negative");
@@ -116,8 +113,6 @@ enum class Direction(
          * Initialized lazily to avoid circular dependencies.
          */
         val opposite by lazy { if (this == POSITIVE) NEGATIVE else POSITIVE }
-
-        override fun toString() = key
     }
 
     companion object {

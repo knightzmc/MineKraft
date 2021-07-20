@@ -27,6 +27,7 @@ import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.Logger
 import org.kryptonmc.api.command.Sender
 import org.kryptonmc.api.event.Listener
+import org.kryptonmc.krypton.adventure.toSectionText
 import org.kryptonmc.krypton.util.thread.GenericThread
 import org.kryptonmc.krypton.world.block.KryptonBlock
 import org.kryptonmc.krypton.world.chunk.ChunkPosition
@@ -104,17 +105,13 @@ object Messages {
 
         fun send(sender: Sender, component: Component) = sender.sendMessage(TranslationManager.render(component))
 
-        fun print(component: Component) = LegacyComponentSerializer.legacySection().serialize(
-            TranslationManager.render(component)
-        ).split("\n").forEach { println(it) }
+        fun print(component: Component) = TranslationManager.render(component).toSectionText().split("\n").forEach { println(it) }
 
-        fun log(logger: Logger, level: Level, component: Component) = LegacyComponentSerializer.legacySection().serialize(
-            TranslationManager.render(component)
-        ).split("\n").forEach { logger.log(level, it) }
+        fun log(logger: Logger, level: Level, component: Component) = TranslationManager.render(component).toSectionText().split("\n").forEach { logger.log(level, it) }
 
         fun log(logger: Logger, level: Level, component: Component, exception: Throwable) = logger.log(
             level,
-            LegacyComponentSerializer.legacySection().serialize(TranslationManager.render(component)),
+            TranslationManager.render(component).toSectionText(),
             exception
         )
 

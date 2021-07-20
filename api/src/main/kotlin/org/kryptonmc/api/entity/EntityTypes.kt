@@ -90,7 +90,7 @@ object EntityTypes {
     @JvmField val PIGLIN_BRUTE = register<Entity>("piglin_brute")
     @JvmField val PILLAGER = register<Entity>("pillager")
     @JvmField val POLAR_BEAR = register<Entity>("polar_bear")
-    @JvmField val PRIMED_TNT = register<Entity>("primed_tnt")
+    @JvmField val PRIMED_TNT = register<Entity>("tnt")
     @JvmField val PUFFERFISH = register<Entity>("pufferfish")
     @JvmField val RABBIT = register<Entity>("rabbit")
     @JvmField val RAVAGER = register<Entity>("ravager")
@@ -133,7 +133,7 @@ object EntityTypes {
     @JvmField val ZOMBIE_VILLAGER = register<Entity>("zombie_villager")
     @JvmField val ZOMBIFIED_PIGLIN = register<Entity>("zombified_piglin")
     @JvmField val PLAYER = register<Player>("player", false)
-    @JvmField val FISHING_HOOK = register<Entity>("fishing_hook", false)
+    @JvmField val FISHING_HOOK = register<Entity>("fishing_bobber", false)
     // @formatter:on
 
     @Suppress("UNCHECKED_CAST") // This should never fail here

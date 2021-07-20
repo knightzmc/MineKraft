@@ -28,6 +28,10 @@ import org.kryptonmc.krypton.entity.attribute.AttributeSupplier
 import org.kryptonmc.krypton.entity.attribute.Attributes
 import org.kryptonmc.krypton.entity.attribute.attributeSupplier
 import org.kryptonmc.krypton.entity.metadata.MetadataKeys
+import org.kryptonmc.krypton.entity.player.KryptonPlayer
+import org.kryptonmc.krypton.packet.out.play.PacketOutAttributes
+import org.kryptonmc.krypton.packet.out.play.PacketOutSpawnLivingEntity
+import org.kryptonmc.krypton.packet.state.PlayPacket
 import org.kryptonmc.krypton.world.KryptonWorld
 import org.spongepowered.math.vector.Vector3i
 import java.util.Optional
@@ -75,6 +79,14 @@ abstract class KryptonLivingEntity(
                 setInt("SleepingZ", it.z())
             }
         }
+
+    override fun addViewer(player: KryptonPlayer): Boolean {
+        if (!super.addViewer(player)) return false
+        player.session.sendPacket(PacketOutAttributes(id, attributes.syncable))
+        return true
+    }
+
+    override fun getSpawnPacket() = PacketOutSpawnLivingEntity(this)
 
     private fun setLivingFlag(flag: Int, state: Boolean) {
         val flags = data[MetadataKeys.LIVING.FLAGS].toInt()

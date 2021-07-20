@@ -31,7 +31,10 @@ import org.kryptonmc.api.block.Blocks
 import org.kryptonmc.api.effect.sound.SoundEvent
 import org.kryptonmc.api.entity.Entity
 import org.kryptonmc.api.entity.EntityType
+import org.kryptonmc.api.event.entity.EntityRemoveEvent
+import org.kryptonmc.api.event.entity.EntitySpawnEvent
 import org.kryptonmc.api.registry.RegistryKey
+import org.kryptonmc.api.space.Position
 import org.kryptonmc.api.space.Vector
 import org.kryptonmc.krypton.KryptonServer
 import org.kryptonmc.api.world.Gamemode
@@ -44,14 +47,9 @@ import org.kryptonmc.krypton.KryptonServer.KryptonServerInfo
 import org.kryptonmc.krypton.ServerInfo
 import org.kryptonmc.krypton.entity.EntityFactory
 import org.kryptonmc.krypton.entity.KryptonEntity
-import org.kryptonmc.krypton.entity.KryptonLivingEntity
 import org.kryptonmc.krypton.entity.player.KryptonPlayer
 import org.kryptonmc.krypton.packet.out.play.GameState
 import org.kryptonmc.krypton.packet.out.play.PacketOutChangeGameState
-import org.kryptonmc.krypton.packet.out.play.PacketOutMetadata
-import org.kryptonmc.krypton.packet.out.play.PacketOutAttributes
-import org.kryptonmc.krypton.packet.out.play.PacketOutSpawnEntity
-import org.kryptonmc.krypton.packet.out.play.PacketOutSpawnLivingEntity
 import org.kryptonmc.krypton.util.createTempFile
 import org.kryptonmc.krypton.util.csv.csv
 import org.kryptonmc.krypton.util.profiling.Profiler
@@ -62,10 +60,13 @@ import org.kryptonmc.krypton.effect.Effect
 import org.kryptonmc.krypton.packet.out.play.PacketOutBlockChange
 import org.kryptonmc.krypton.packet.out.play.PacketOutSoundEffect
 import org.kryptonmc.krypton.packet.out.play.PacketOutEffect
+import org.kryptonmc.krypton.packet.out.play.PacketOutTimeUpdate
 import org.kryptonmc.krypton.registry.InternalRegistryKeys
 import org.kryptonmc.krypton.util.KEY_CODEC
 import org.kryptonmc.krypton.util.clamp
+import org.kryptonmc.krypton.util.forEachInRange
 import org.kryptonmc.krypton.util.synchronize
+import org.kryptonmc.krypton.world.chunk.ChunkPosition
 import org.kryptonmc.krypton.world.generation.WorldGenerationSettings
 import org.spongepowered.math.vector.Vector3i
 import java.io.Writer
@@ -79,8 +80,6 @@ import kotlin.io.path.deleteIfExists
 import kotlin.io.path.exists
 import kotlin.io.path.moveTo
 import kotlin.io.path.outputStream
-import kotlin.math.max
-import kotlin.math.min
 import kotlin.random.Random
 
 data class KryptonWorld(
@@ -119,6 +118,10 @@ data class KryptonWorld(
     val chunkMap = Long2ObjectOpenHashMap<KryptonChunk>().synchronize()
     val players: MutableSet<KryptonPlayer> = ConcurrentHashMap.newKeySet()
     val entities: MutableSet<KryptonEntity> = ConcurrentHashMap.newKeySet()
+    private val entitiesByChunk = object : ConcurrentHashMap<Long, MutableSet<KryptonEntity>>() {
+        override fun get(key: Long) = super.computeIfAbsent(key) { newKeySet() }
+        operator fun get(chunk: KryptonChunk) = get(ChunkPosition.toLong(chunk.position.x, chunk.position.z))
+    }
 
     val chunkManager = ChunkManager(this)
     val playerManager = server.playerManager
@@ -133,26 +136,50 @@ data class KryptonWorld(
     private var oldThunderLevel = 0F
     override var thunderLevel = 0F
 
-    override fun <T : Entity> spawnEntity(type: EntityType<T>, location: Vector) {
-        if (!type.isSummonable) return
+    @Suppress("UNCHECKED_CAST")
+    override fun <T : Entity> spawnEntity(type: EntityType<T>, location: Vector): T? {
+        if (!type.isSummonable) return null
         // TODO: Fix this when the rest of the entity types exist again
 //        when (type) {
 //            EntityType.PLAYER -> return // TODO: Implement player spawning
 //            EntityType.EXPERIENCE_ORB -> spawnExperienceOrb(location)
 //            EntityType.PAINTING -> spawnPainting(location)
 //        }
-        val entity = EntityFactory.create(type, this)?.apply { this.location = location.toLocation(0F, 0F) } ?: return
+        val entity = EntityFactory.create(type, this)?.apply { this.location = location.toLocation(0F, 0F) } ?: return null
         spawnEntity(entity)
+        return entity as? T
     }
 
     fun spawnEntity(entity: KryptonEntity) {
-        val packets = mutableListOf(
-            if (entity is KryptonLivingEntity) PacketOutSpawnLivingEntity(entity) else PacketOutSpawnEntity(entity),
-            PacketOutMetadata(entity.id, entity.data.all)
-        )
-        if (entity is KryptonLivingEntity) packets += PacketOutAttributes(entity.id, entity.attributes.syncable)
-        players.forEach { player -> packets.forEach { player.session.sendPacket(it) } }
-        entities += entity
+        if (entity.world != this) return
+        server.eventManager.fire(EntitySpawnEvent(entity, this)).thenAccept { event ->
+            if (!event.result.isAllowed) return@thenAccept
+            val location = entity.location
+
+            if (entity is KryptonPlayer) {
+                // TODO: World border
+                entity.session.sendPacket(PacketOutTimeUpdate(time, dayTime))
+            }
+            forEachInRange(location, server.config.world.viewDistance) {
+                if (entity is KryptonPlayer) it.addViewer(entity)
+                if (it is KryptonPlayer) entity.addViewer(it)
+            }
+
+            val chunk = getChunk(entity.location) ?: return@thenAccept
+            entitiesByChunk[chunk.position.toLong()].add(entity)
+            entities.add(entity)
+        }
+    }
+
+    fun removeEntity(entity: KryptonEntity) {
+        if (entity.world != this) return
+        server.eventManager.fire(EntityRemoveEvent(entity, this)).thenAccept {
+            if (!it.result.isAllowed) return@thenAccept
+            entity.viewers.forEach(entity::removeViewer)
+            val chunk = getChunk(entity.location) ?: return@thenAccept
+            entitiesByChunk[chunk.position.toLong()].remove(entity)
+            entities.remove(entity)
+        }
     }
 
     override fun spawnExperienceOrb(location: Vector) = Unit // TODO: Implement XP orb spawning
@@ -186,6 +213,12 @@ data class KryptonWorld(
     override fun getChunkAt(x: Int, z: Int) = chunkManager[x, z]
 
     override fun getChunk(x: Int, y: Int, z: Int) = getChunkAt(x shr 4, z shr 4)
+
+    override fun getChunk(position: Position) = getChunk(position.blockX, position.blockY, position.blockZ)
+
+    override fun getChunk(position: Vector3i) = getChunk(position.x(), position.y(), position.z())
+
+    fun getEntitiesInChunk(chunk: KryptonChunk) = entitiesByChunk[chunk.position.toLong()]
 
     override fun loadChunk(x: Int, z: Int) = chunkManager.load(x, z)
 

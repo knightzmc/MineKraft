@@ -20,9 +20,9 @@ package org.kryptonmc.krypton.util.datafix.fixes
 
 import com.mojang.serialization.Dynamic
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
+import org.kryptonmc.api.adventure.toJsonString
 
 fun Dynamic<*>.fixCustomNameTag(): Dynamic<*> {
     val name = get("CustomName").asString("")
-    return if (name.isEmpty()) remove("CustomName") else set("CustomName", createString(GsonComponentSerializer.gson().serialize(Component.text(name))))
+    return if (name.isEmpty()) remove("CustomName") else set("CustomName", createString(Component.text(name).toJsonString()))
 }

@@ -20,6 +20,7 @@ package org.kryptonmc.krypton.registry.block
 
 import com.google.gson.JsonObject
 import net.kyori.adventure.key.Key
+import org.kryptonmc.api.util.toKey
 
 class BlockData(
     val key: Key,
@@ -55,6 +56,7 @@ class BlockData(
     val largeCollisionShape = boolean("largeCollisionShape")
     val canRespawnIn = boolean("canRespawnIn")
     val toolRequired = boolean("toolRequired")
+    val itemKey = (override["correspondingItem"] ?: main["correspondingItem"])?.asString?.toKey()
 
     private fun string(name: String) = element(name).asString
     private fun double(name: String) = element(name).asDouble

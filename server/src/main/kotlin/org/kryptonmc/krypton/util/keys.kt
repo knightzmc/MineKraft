@@ -25,7 +25,7 @@ import com.mojang.serialization.DataResult
 import net.kyori.adventure.key.InvalidKeyException
 import net.kyori.adventure.key.Key
 import net.kyori.adventure.text.Component
-import org.kryptonmc.krypton.adventure.toMessage
+import org.kryptonmc.api.adventure.toMessage
 
 val KEY_CODEC: Codec<Key> = Codec.STRING.comapFlatMap(::readKey, Key::asString).stable()
 

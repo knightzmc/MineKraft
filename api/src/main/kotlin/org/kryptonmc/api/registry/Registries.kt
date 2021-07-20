@@ -61,10 +61,10 @@ object Registries {
     val ITEM = createDefaulted(RegistryKeys.ITEM, key("air"))
 
     /**
-     * The registry of all item rarities in the game.
+     * The registry of all biomes in the game.
      */
     @JvmField
-    val ITEM_RARITIES = create(RegistryKeys.ITEM_RARITIES)
+    val BIOME = create(RegistryKeys.BIOME)
 
     /**
      * Registers a new entry to the given [registry], with the given [key] mapped to
@@ -87,6 +87,30 @@ object Registries {
      */
     @JvmStatic
     fun <T : Any> register(registry: Registry<T>, key: Key, value: T): T = MANAGER.register(registry, key, value)
+
+    /**
+     * Registers a new entry to the given [registry], with the given [key] mapped to
+     * the given [value].
+     *
+     * @param registry the registry to register to
+     * @param id the ID of the entry in the registry
+     * @param key the key
+     * @param value the value
+     */
+    @JvmStatic
+    fun <T : Any> register(registry: Registry<T>, id: Int, key: String, value: T): T = register(registry, id, key, value)
+
+    /**
+     * Registers a new entry to the given [registry], with the given [key] mapped to
+     * the given [value].
+     *
+     * @param registry the registry to register to
+     * @param id the ID of the entry in the registry
+     * @param key the key
+     * @param value the value
+     */
+    @JvmStatic
+    fun <T : Any> register(registry: Registry<T>, id: Int, key: Key, value: T): T = MANAGER.register(registry, id, key, value)
 
     /**
      * Creates a new registry with the given registry [key].

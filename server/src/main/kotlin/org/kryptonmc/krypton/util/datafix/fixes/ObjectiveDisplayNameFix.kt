@@ -24,7 +24,7 @@ import com.mojang.datafixers.DataFixUtils
 import com.mojang.datafixers.TypeRewriteRule
 import com.mojang.datafixers.schemas.Schema
 import net.kyori.adventure.text.Component
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
+import org.kryptonmc.api.adventure.toJsonString
 import org.kryptonmc.krypton.util.datafix.References
 
 class ObjectiveDisplayNameFix(outputSchema: Schema, changesType: Boolean) : DataFix(outputSchema, changesType) {
@@ -35,7 +35,7 @@ class ObjectiveDisplayNameFix(outputSchema: Schema, changesType: Boolean) : Data
             typed.update(remainderFinder()) { objective ->
                 objective.update("DisplayName") { name ->
                     DataFixUtils.orElse(name.asString()
-                        .map { GsonComponentSerializer.gson().serialize(Component.text(it)) }
+                        .map { Component.text(it).toJsonString() }
                         .map(objective::createString)
                         .result(), name)
                 }

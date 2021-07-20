@@ -63,6 +63,17 @@ interface Registry<T : Any> : Map<RegistryKey<T>, T> {
     fun <V : T> register(key: RegistryKey<T>, value: V): V
 
     /**
+     * Registers a new value to this registry with the given registry [key]
+     * and value.
+     *
+     * @param id the ID of the entry in the registry
+     * @param key the registry key
+     * @param value the value
+     * @return the value
+     */
+    fun <V : T> register(id: Int, key: RegistryKey<T>, value: V): V
+
+    /**
      * Returns true if the given [key] is registered, false otherwise.
      *
      * @param key the key

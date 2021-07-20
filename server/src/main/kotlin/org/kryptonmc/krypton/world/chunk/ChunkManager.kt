@@ -60,7 +60,7 @@ class ChunkManager(private val world: KryptonWorld) {
         val heightmaps = nbt.getCompound("Heightmaps")
 
         val sectionList = nbt.getList<NBTCompound>("Sections")
-        val sections = arrayOfNulls<ChunkSection>(sectionList.size)
+        val sections = arrayOfNulls<ChunkSection>(world.sectionCount)
         for (i in sectionList.indices) {
             val sectionData = sectionList[i]
             val y = sectionData.getByte("Y").toInt()

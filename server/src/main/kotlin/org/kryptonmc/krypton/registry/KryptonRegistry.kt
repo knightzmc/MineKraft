@@ -41,7 +41,7 @@ open class KryptonRegistry<T : Any>(override val key: RegistryKey<out Registry<T
     override fun <V : T> register(key: RegistryKey<T>, value: V) = register(nextId, key, value)
 
     @Suppress("ReplacePutWithAssignment") // We want to use fastutil's specialised no unboxing put
-    fun <V : T> register(id: Int, key: RegistryKey<T>, value: V): V {
+    override fun <V : T> register(id: Int, key: RegistryKey<T>, value: V): V {
         byId.size(max(byId.size, id + 1))
         byId[id] = value
         toId.put(value, id)

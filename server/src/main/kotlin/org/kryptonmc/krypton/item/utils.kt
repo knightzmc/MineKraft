@@ -19,11 +19,11 @@
 package org.kryptonmc.krypton.item
 
 import net.kyori.adventure.inventory.Book
-import net.kyori.adventure.text.serializer.gson.GsonComponentSerializer
 import org.jglrxavpok.hephaistos.nbt.NBTCompound
 import org.jglrxavpok.hephaistos.nbt.NBTList
 import org.jglrxavpok.hephaistos.nbt.NBTString
 import org.jglrxavpok.hephaistos.nbt.NBTTypes
+import org.kryptonmc.api.adventure.toJsonString
 import org.kryptonmc.api.item.ItemHandler
 import org.kryptonmc.api.item.ItemType
 import org.kryptonmc.api.item.ItemTypes
@@ -36,8 +36,8 @@ val ItemType.handler: ItemHandler
 
 fun Book.toItemStack(locale: Locale): KryptonItemStack {
     val tag = NBTCompound()
-        .setString("title", GsonComponentSerializer.gson().serialize(title()))
-        .setString("author", GsonComponentSerializer.gson().serialize(author()))
-        .set("pages", NBTList<NBTString>(NBTTypes.TAG_String).apply { pages().forEach { add(NBTString(GsonComponentSerializer.gson().serialize(it))) } })
+        .setString("title", title().toJsonString())
+        .setString("author", author().toJsonString())
+        .set("pages", NBTList<NBTString>(NBTTypes.TAG_String).apply { pages().forEach { add(NBTString(it.toJsonString())) } })
     return KryptonItemStack(ItemTypes.WRITTEN_BOOK, 1, KryptonMetaHolder(tag))
 }

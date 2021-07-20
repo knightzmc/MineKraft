@@ -26,8 +26,8 @@ import com.mojang.brigadier.exceptions.SimpleCommandExceptionType
 import com.mojang.brigadier.suggestion.Suggestions
 import com.mojang.brigadier.suggestion.SuggestionsBuilder
 import net.kyori.adventure.text.Component
+import org.kryptonmc.api.adventure.toMessage
 import org.kryptonmc.api.command.Sender
-import org.kryptonmc.krypton.adventure.toMessage
 import org.kryptonmc.api.entity.player.Player
 import org.kryptonmc.krypton.command.arguments.coordinates.Coordinates
 import org.kryptonmc.krypton.command.arguments.coordinates.LocalCoordinates
