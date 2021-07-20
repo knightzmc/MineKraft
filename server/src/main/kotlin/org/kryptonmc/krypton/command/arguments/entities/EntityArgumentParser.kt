@@ -19,71 +19,98 @@
 package org.kryptonmc.krypton.command.arguments.entities
 
 import com.mojang.brigadier.StringReader
+import org.kryptonmc.krypton.KryptonServer
 
 object EntityArgumentParser {
 
     fun parse(
         reader: StringReader,
         operation: Char,
+        position: Int,
+        onlyPlayers: Boolean,
+        singleTarget: Boolean,
+        server: KryptonServer
     ) = when (operation) {
         'p' -> {
-            EntityQuery(listOf(), EntityQuery.Operation.NEAREST_PLAYER)
+            EntityQuery(listOf(), EntityQuery.SELECTOR.NEAREST_PLAYER)
         }
         'e' -> {
-            EntityQuery(listOf(), EntityQuery.Operation.ALL_ENTITIES)
+            if (singleTarget) {
+                reader.cursor = 0
+                throw TOO_MANY_ENTITIES.createWithContext(reader)
+            } else if (onlyPlayers) {
+                reader.cursor = 0
+                throw ONLY_FOR_PLAYERS.createWithContext(reader)
+            }
+            EntityQuery(listOf(), EntityQuery.SELECTOR.ALL_ENTITIES)
         }
         'r' -> {
-            EntityQuery(listOf(), EntityQuery.Operation.RANDOM_PLAYER)
+            EntityQuery(listOf(), EntityQuery.SELECTOR.RANDOM_PLAYER)
         }
         'a' -> {
-            if(reader.canRead() && reader.peek() == '[') {
-                EntityQuery(parseArguments(reader), EntityQuery.Operation.ALL_PLAYERS)
+            if (singleTarget) {
+                reader.cursor = 0
+                throw TOO_MANY_PLAYERS.createWithContext(reader)
+            }
+            if (reader.canRead() && reader.peek() == '[') {
+                reader.skip()
+                EntityQuery(parseArguments(reader, server), EntityQuery.SELECTOR.ALL_PLAYERS)
             } else {
-                EntityQuery(listOf(), EntityQuery.Operation.ALL_PLAYERS)
+                EntityQuery(listOf(), EntityQuery.SELECTOR.ALL_PLAYERS)
             }
         }
         's' -> {
-            EntityQuery(listOf(), EntityQuery.Operation.EXECUTOR)
+            EntityQuery(listOf(), EntityQuery.SELECTOR.EXECUTOR)
         }
-        else -> EntityQuery(listOf(), EntityQuery.Operation.UNKNOWN)
+        else -> {
+            reader.cursor = position
+            throw UNKNOWN_SELECTOR_EXCEPTION.createWithContext(reader, "@$operation")
+        }
     }
 
     private fun parseArguments(
-        reader: StringReader
+        reader: StringReader,
+        server: KryptonServer
     ): List<EntityArgument.EntityArg> {
         reader.skipWhitespace()
         val args = mutableListOf<EntityArgument.EntityArg>()
         while (reader.canRead() && reader.peek() != ']') {
             reader.skipWhitespace()
-            reader.skip()
-            var not = false
-            val option = buildString {
-                while (reader.canRead() && reader.peek() != '=') {
-                    val c = reader.read()
-                    append(c)
-                    reader.skipWhitespace()
-                }
-            }
+            val position = reader.cursor
+            val option = reader.readString()
+            if (option !in EntityArguments.ARGUMENTS) throw INVALID_OPTION.createWithContext(reader, option)
             reader.skipWhitespace()
-            val value = buildString {
-                if (reader.canRead() && reader.peek() == '=') {
-                    reader.skip()
-                    reader.skipWhitespace()
-                    if (reader.peek() == '!') {
-                        not = true
-                        reader.skip()
-                        reader.skipWhitespace()
-                    }
-                    while (reader.canRead() && reader.peek() != ',' && reader.peek() != ']') {
-                        append(reader.read())
-                        reader.skipWhitespace()
-                    }
-                }
+            if (reader.canRead() && reader.peek() == '=') {
+                reader.skip()
                 reader.skipWhitespace()
+                val value = reader.readString()
+                if (value.isBlank()) throw VALUELESS_EXCEPTION.createWithContext(reader, option)
+
+                args += EntityArgument.EntityArg(option, value, false)
+
+                reader.skipWhitespace()
+                if (!reader.canRead()) {
+                    continue
+                }
+
+                if (reader.peek() == ',') {
+                    reader.skip()
+                    continue
+                }
+
+                if (reader.peek() != ']') {
+                    throw UNTERMINATED_EXCEPTION.createWithContext(reader)
+                }
+                break
             }
-            if (option in EntityArguments.ARGUMENTS) {
-                args += EntityArgument.EntityArg(option, value, not)
-            }
+
+            reader.cursor = position
+            throw VALUELESS_EXCEPTION.createWithContext(reader, option)
+        }
+        if (reader.canRead()) {
+            reader.skip()
+        } else {
+            throw UNTERMINATED_EXCEPTION.createWithContext(reader)
         }
         return args.toList()
     }

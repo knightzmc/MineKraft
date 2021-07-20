@@ -48,7 +48,7 @@ internal class GamemodeCommand(private val server: KryptonServer) : InternalComm
                     .executes {
                         gameModeArgument(it, gamemode)
                     }
-                    .then(argument<Sender, EntityQuery>("targets", EntityArgument.player())
+                    .then(argument<Sender, EntityQuery>("targets", EntityArgument.players(server))
                         .executes {
                             targetArgument(it, gamemode)
                         })
@@ -63,7 +63,7 @@ internal class GamemodeCommand(private val server: KryptonServer) : InternalComm
                         ?: return@executes 1
                     gameModeArgument(it, gamemode)
                 }
-                .then(argument<Sender, EntityQuery>("targets", EntityArgument.player())
+                .then(argument<Sender, EntityQuery>("targets", EntityArgument.players(server))
                     .executes {
                         val gamemode = Gamemode.fromShortName(it.argument("gamemode")) ?: Gamemode.fromId(
                             it.argument<String>("gamemode").toIntOrNull() ?: return@executes 1
@@ -85,8 +85,6 @@ internal class GamemodeCommand(private val server: KryptonServer) : InternalComm
     private fun targetArgument(context: CommandContext<Sender>, gamemode: Gamemode): Int {
         val sender = context.source as? KryptonPlayer ?: return 1
         val entities = context.entityArgument("targets").getEntities(sender)
-        sender.sendMessage(text(entities.map { it.name }
-            .toString())) //To see if all entities are getting parsed
 
         updateGameMode(entities as List<KryptonPlayer>, gamemode, sender)
         return 1
@@ -97,7 +95,7 @@ internal class GamemodeCommand(private val server: KryptonServer) : InternalComm
             entity.gamemode = mode
             server.playerManager.sendToAll(PacketOutPlayerInfo(UPDATE_GAMEMODE, entity))
             sender.sendMessage(
-                if (sender != entity) translatable(
+                if (sender == entity) translatable(
                     "gameMode.changed",
                     listOf(translatable("gameMode.${mode.name.lowercase()}"))
                 ) else translatable(

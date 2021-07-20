@@ -28,36 +28,50 @@ import org.kryptonmc.krypton.util.toIntRange
 /**
  * Documentation [TODO]
  */
-class EntityQuery(private val args: List<EntityArgument.EntityArg>, val type: Operation, private val playerName: String = "") {
+class EntityQuery(
+    private val args: List<EntityArgument.EntityArg>,
+    val type: SELECTOR,
+    private val playerName: String = ""
+) {
 
-    fun getEntities(source: KryptonPlayer)= when(type) {
-        Operation.RANDOM_PLAYER -> {
-            //parse args
+    fun getEntities(source: KryptonPlayer) = when (type) {
+        SELECTOR.RANDOM_PLAYER -> {
             listOf(source.server.players.random())
         }
-        Operation.ALL_PLAYERS -> {
-            //parse args
-            source.server.players
+        SELECTOR.ALL_PLAYERS -> {
+            if (args.isNotEmpty()) {
+                val entities = applyArguments((source.server.players + source.world.entities).toList(), source)
+                if (entities.isEmpty()) throw PLAYER_NOT_FOUND.create()
+                entities
+            } else {
+                source.server.players
+            }
         }
-        Operation.EXECUTOR -> listOf(source)
-        Operation.ALL_ENTITIES -> {
-            // parse args
-            (source.server.players + source.world.entities).toList()
+        SELECTOR.EXECUTOR -> listOf(source)
+        SELECTOR.ALL_ENTITIES -> {
+            if (args.isNotEmpty()) {
+                val entities = applyArguments((source.server.players + source.world.entities).toList(), source)
+                if (entities.isEmpty()) throw ENTITY_NOT_FOUND.create()
+                entities
+            } else {
+                (source.server.players + source.world.entities).toList()
+            }
         }
-        Operation.NEAREST_PLAYER -> {
-            // parse args
+        SELECTOR.NEAREST_PLAYER -> {
             var currentNearest = source.server.players[0]
             for (player in source.server.players) {
-                if(player.distance(source) < currentNearest.distance(source)) currentNearest = player
+                if (player.distance(source) < currentNearest.distance(source)) currentNearest = player
             }
             listOf(currentNearest)
         }
-        Operation.PLAYER -> listOf(source.server.player(playerName)!!)
-        Operation.UNKNOWN -> listOf()
+        SELECTOR.PLAYER -> listOf(source.server.player(playerName) ?: throw PLAYER_NOT_EXISTS.create())
+        SELECTOR.UNKNOWN -> throw UNKNOWN_SELECTOR_EXCEPTION.create("")
     }
 
-    private fun applyArguments(source: KryptonPlayer): List<KryptonEntity> {
-        var entities = (source.world.entities + source.server.players).toList()
+    fun getPlayers(source: KryptonPlayer) = getEntities(source).map { it as KryptonPlayer }
+
+    private fun applyArguments(originalEntities: List<KryptonEntity>, source: KryptonPlayer): List<KryptonEntity> {
+        var entities = originalEntities
         for (arg in args) {
             when (arg.name) {
                 "x" -> {
@@ -102,7 +116,7 @@ class EntityQuery(private val args: List<EntityArgument.EntityArg>, val type: Op
                     TODO()
                 }
                 "scores" -> {
-
+                    TODO()
                 }
                 "tag" -> {
                     TODO()
@@ -148,6 +162,7 @@ class EntityQuery(private val args: List<EntityArgument.EntityArg>, val type: Op
                 }
                 "limit" -> {
                     val limit = arg.value.toInt()
+                    if (limit <= 0) throw LIMIT_NULL.create()
                     entities = if (entities.size > limit) entities.subList(0, limit - 1) else entities
                 }
                 else -> {
@@ -158,7 +173,7 @@ class EntityQuery(private val args: List<EntityArgument.EntityArg>, val type: Op
         return entities
     }
 
-    enum class Operation {
+    enum class SELECTOR {
 
         RANDOM_PLAYER,
         ALL_PLAYERS,
@@ -170,7 +185,11 @@ class EntityQuery(private val args: List<EntityArgument.EntityArg>, val type: Op
 
         companion object {
 
-            fun fromChar(operation: Char) = when (operation) {
+            /**
+             * Get the target selector from it's short name
+             * you can find these at the [Minecraft Wiki](https://minecraft.fandom.com/wiki/Target_selectors)
+             */
+            fun fromChar(selector: Char) = when (selector) {
                 'p' -> NEAREST_PLAYER
                 'r' -> RANDOM_PLAYER
                 'a' -> ALL_PLAYERS
