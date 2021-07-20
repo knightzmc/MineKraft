@@ -20,32 +20,32 @@ import org.kryptonmc.api.world.Gamemode.SURVIVAL
  * and [SPECTATOR].
  */
 @Suppress("MemberVisibilityCanBePrivate")
-enum class Gamemode {
+enum class Gamemode(val shortName: String) {
 
     /**
      * Plain old survival mode. In this mode, you have a finite amount of health,
      * and you can take damage.
      */
-    SURVIVAL,
+    SURVIVAL("s"),
 
     /**
      * In creative this mode, you are completely invulnerable, you can fly,
      * and you can spawn and use any item you wish.
      */
-    CREATIVE,
+    CREATIVE("c"),
 
     /**
      * Adventure mode is designed for map creators, in that blocks require specific
      * tools to break, and you cannot break them without those tools.
      */
-    ADVENTURE,
+    ADVENTURE("a"),
 
     /**
      * In spectator mode, you are also completely invulnerable, but you can
      * also fly through blocks, as the entire world is essentially non existent
      * to your client (you can see things, but you will never collide with them).
      */
-    SPECTATOR;
+    SPECTATOR("sp");
 
     /**
      * If this gamemode can build.
@@ -53,24 +53,11 @@ enum class Gamemode {
     val canBuild: Boolean
         get() = this == SURVIVAL || this == CREATIVE
 
-
     /**
      *  Represents the key of the gamemode
      */
     val key: Key
         get() = key("gameMode.${this.name.lowercase()}")
-
-    /**
-     * Represents the short name of the given gamemode
-     * The short name is used in [GamemodeCommand]
-     */
-    val shortName
-        get() = when (this) {
-            SURVIVAL -> "s"
-            CREATIVE -> "c"
-            ADVENTURE -> "a"
-            SPECTATOR -> "sp"
-        }
 
     override fun toString() = name.lowercase()
 
