@@ -34,7 +34,7 @@ import org.kryptonmc.krypton.command.arguments.NBTCompoundArgument
 import org.kryptonmc.krypton.command.arguments.SummonEntityArgument
 import org.kryptonmc.krypton.command.arguments.VectorArgument
 import org.kryptonmc.krypton.command.arguments.coordinates.Coordinates
-import org.kryptonmc.krypton.command.arguments.entityArgument
+import org.kryptonmc.krypton.command.arguments.entitySummonArgument
 import org.kryptonmc.krypton.command.arguments.vectorArgument
 import org.kryptonmc.krypton.entity.EntityFactory
 import org.kryptonmc.krypton.entity.player.KryptonPlayer
@@ -52,19 +52,29 @@ object SummonCommand : InternalCommand {
                 .suggests(SuggestionProviders.SUMMONABLE_ENTITIES)
                 .executes {
                     val sender = it.source as? KryptonPlayer ?: return@executes 1
-                    spawnEntity(sender, it.entityArgument("entity"), sender.location, NBTCompound())
+                    spawnEntity(sender, it.entitySummonArgument("entity"), sender.location, NBTCompound())
                     1
                 }
                 .then(argument<Sender, Coordinates>("position", VectorArgument())
                     .executes {
                         val sender = it.source as? KryptonPlayer ?: return@executes 1
-                        spawnEntity(sender, it.entityArgument("entity"), it.vectorArgument("position"), NBTCompound())
+                        spawnEntity(
+                            sender,
+                            it.entitySummonArgument("entity"),
+                            it.vectorArgument("position"),
+                            NBTCompound()
+                        )
                         1
                     }
                     .then(argument<Sender, NBTCompound>("nbt", NBTCompoundArgument())
                         .executes {
                             val sender = it.source as? KryptonPlayer ?: return@executes 1
-                            spawnEntity(sender, it.entityArgument("entity"), it.vectorArgument("position"), it.argument("nbt"))
+                            spawnEntity(
+                                sender,
+                                it.entitySummonArgument("entity"),
+                                it.vectorArgument("position"),
+                                it.argument("nbt")
+                            )
                             1
                         })))
         )

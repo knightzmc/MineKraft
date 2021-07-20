@@ -30,6 +30,16 @@ import java.util.Optional
 // Avoid lookups
 fun String.toInetAddress(): InetAddress = InetAddresses.forString(this)
 
+fun String.toIntRange(): IntRange {
+    return if (startsWith("..")) {
+        val string = replace("..", "").toInt()
+        IntRange(360, string)
+    } else {
+        val values = split("..")
+        IntRange(values[0].toInt(), values[1].toInt())
+    }
+}
+
 fun calculatePositionChange(new: Double, old: Double) = ((new * 32 - old * 32) * 128).toInt().toShort()
 
 // This is Yggdrasil's strange way of digesting to hex

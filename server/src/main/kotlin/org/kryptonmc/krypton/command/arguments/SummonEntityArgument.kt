@@ -50,4 +50,4 @@ private val ERROR_UNKNOWN_ENTITY = DynamicCommandExceptionType { Component.trans
 
 private fun Key.ensureSummonable() = Registries.ENTITY_TYPE[this].takeIf { it.isSummonable }?.key ?: throw ERROR_UNKNOWN_ENTITY.create(this)
 
-fun CommandContext<Sender>.entityArgument(name: String) = argument<Key>(name).ensureSummonable()
+fun CommandContext<Sender>.entitySummonArgument(name: String) = argument<Key>(name).ensureSummonable()
