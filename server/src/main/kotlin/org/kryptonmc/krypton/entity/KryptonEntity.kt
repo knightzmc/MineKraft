@@ -194,11 +194,11 @@ abstract class KryptonEntity(
         showEntity(ShowEntity.of(type.key, uuid, displayName.takeIf { it !== Component.empty() }))
 
     fun distance(entity: KryptonEntity): Double {
-        val e1 = location
-        val e2 = entity.location
-        val x = (e2.x - e1.x).pow(2)
-        val y = (e2.y - e1.y).pow(2)
-        val z = (e2.z - e1.z).pow(2)
+        val l1 = location
+        val l2 = entity.location
+        val x = (l2.x - l1.x).pow(2)
+        val y = (l2.y - l1.y).pow(2)
+        val z = (l2.z - l1.z).pow(2)
 
         return sqrt(x + y + z)
     }
